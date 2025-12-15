@@ -246,6 +246,120 @@ function App() {
               </div>
             </div>
 
+            {/* JavaScript API Navigation Examples */}
+            <div className="flex flex-col gap-4 p-4 border rounded-lg">
+              <h2 className="text-lg font-semibold">JavaScript API Navigation</h2>
+              <div className="flex flex-col gap-2">
+                <p className="text-sm font-medium text-muted-foreground">Test JavaScript navigation methods:</p>
+                <p className="text-xs text-muted-foreground">
+                  Note: <code>window.location</code> methods (<code>href</code>, <code>replace()</code>, <code>assign()</code>) cannot be intercepted due to browser security restrictions (read-only properties). 
+                  Only <code>window.open()</code>, <code>history.pushState()</code>, <code>history.replaceState()</code>, and click events can be intercepted.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => window.open('https://google.com', '_blank')}
+                    variant="outline"
+                    size="sm"
+                  >
+                    window.open() - External
+                  </Button>
+                  <Button
+                    onClick={() => window.open('#/admin/test', '_self')}
+                    variant="outline"
+                    size="sm"
+                  >
+                    window.open() - Hash Route
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      (window.location as any).href = 'https://github.com'
+                    }}
+                    variant="outline"
+                    size="sm"
+                    disabled
+                    title="Cannot be intercepted (browser security restriction)"
+                  >
+                    location.href - External (not intercepted)
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      (window.location as any).href = '/test-page'
+                    }}
+                    variant="outline"
+                    size="sm"
+                    disabled
+                    title="Cannot be intercepted (browser security restriction)"
+                  >
+                    location.href - Internal (not intercepted)
+                  </Button>
+                  <Button
+                    onClick={() => window.location.replace('https://stackoverflow.com')}
+                    variant="outline"
+                    size="sm"
+                    disabled
+                    title="Cannot be intercepted (browser security restriction)"
+                  >
+                    location.replace() - External (not intercepted)
+                  </Button>
+                  <Button
+                    onClick={() => window.location.replace('#/public/test')}
+                    variant="outline"
+                    size="sm"
+                    disabled
+                    title="Cannot be intercepted (browser security restriction)"
+                  >
+                    location.replace() - Hash (not intercepted)
+                  </Button>
+                  <Button
+                    onClick={() => window.location.assign('https://example.com')}
+                    variant="outline"
+                    size="sm"
+                    disabled
+                    title="Cannot be intercepted (browser security restriction)"
+                  >
+                    location.assign() - External (not intercepted)
+                  </Button>
+                  <Button
+                    onClick={() => window.location.assign('/another-internal')}
+                    variant="outline"
+                    size="sm"
+                    disabled
+                    title="Cannot be intercepted (browser security restriction)"
+                  >
+                    location.assign() - Internal (not intercepted)
+                  </Button>
+                  <Button
+                    onClick={() => history.pushState({}, '', 'https://google.com')}
+                    variant="outline"
+                    size="sm"
+                  >
+                    history.pushState() - External
+                  </Button>
+                  <Button
+                    onClick={() => history.pushState({}, '', '#/admin/push')}
+                    variant="outline"
+                    size="sm"
+                  >
+                    history.pushState() - Hash
+                  </Button>
+                  <Button
+                    onClick={() => history.replaceState({}, '', 'https://github.com')}
+                    variant="outline"
+                    size="sm"
+                  >
+                    history.replaceState() - External
+                  </Button>
+                  <Button
+                    onClick={() => history.replaceState({}, '', '#/public/replace')}
+                    variant="outline"
+                    size="sm"
+                  >
+                    history.replaceState() - Hash
+                  </Button>
+                </div>
+              </div>
+            </div>
+
             {/* Instructions */}
             <div className="p-4 bg-muted rounded-lg text-sm">
               <p className="font-semibold mb-2">How to test:</p>
@@ -256,6 +370,7 @@ function App() {
                 <li>Enable "Allow example.com" checkbox - example.com link should work, others still blocked</li>
                 <li>Enable "Block Internal Links" - all internal links should be blocked</li>
                 <li>Set "Allow SubLocation" to "admin" - only #/admin/* links will work, others blocked</li>
+                <li>Test JavaScript APIs (window.open, location.href, history.pushState, etc.) - they should also be blocked</li>
                 <li>Disable the guard and all links should work normally</li>
               </ol>
             </div>
