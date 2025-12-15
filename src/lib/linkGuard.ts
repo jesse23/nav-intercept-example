@@ -169,6 +169,40 @@ export function setupLinkGuard(options: {
   // due to browser security restrictions - they are read-only properties.
   // We can only intercept: window.open(), history.pushState(), history.replaceState(), and click events
 
+  // Test hashchange event - fires when hash changes (e.g., location.href = '#/newSublocation')
+  const hashChangeHandler = (e: HashChangeEvent) => {
+    alert(`🔔 hashchange event fired!\n\nOld URL: ${e.oldURL}\nNew URL: ${e.newURL}\nCurrent Location: ${window.location.href}`)
+    console.log('hashchange event:', {
+      oldURL: e.oldURL,
+      newURL: e.newURL,
+      currentLocation: window.location.href,
+      timestamp: new Date().toISOString()
+    })
+  }
+
+  window.addEventListener('hashchange', hashChangeHandler)
+
+  // Test beforeunload event - fires when page is about to unload (e.g., location.href = '/newPage')
+  const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+    const currentLocation = window.location.href
+    
+    // Check if this navigation should be blocked
+    const checkResult = shouldBlockUrl(currentLocation)
+    
+    if (checkResult.blocked && checkResult.url) {
+      // Notify about the blocked navigation attempt
+      notifyBlocked(checkResult.url, checkResult.reason, 'location.href')
+      
+      // Best practice: preventDefault() + set returnValue for legacy support
+      // Note: The browser will show its own generic message - we cannot customize it
+      // See: https://developer.mozilla.org/en-US/docs/Web/API/BeforeUnloadEvent/returnValue
+      e.preventDefault()
+      e.returnValue = '' // Any truthy value works, but message is ignored by browsers
+    }
+  }
+
+  window.addEventListener('beforeunload', beforeUnloadHandler)
+
   // Intercept history.pushState()
   const originalPushState = history.pushState.bind(history)
   history.pushState = function(state: any, title: string, url?: string | URL | null) {
@@ -214,6 +248,8 @@ export function setupLinkGuard(options: {
   // Return cleanup function to restore original functions
   return () => {
     document.removeEventListener('click', clickHandler, true)
+    window.removeEventListener('hashchange', hashChangeHandler)
+    window.removeEventListener('beforeunload', beforeUnloadHandler)
     window.open = originalWindowOpen
     history.pushState = originalPushState
     history.replaceState = originalReplaceState

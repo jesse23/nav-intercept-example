@@ -252,8 +252,8 @@ function App() {
               <div className="flex flex-col gap-2">
                 <p className="text-sm font-medium text-muted-foreground">Test JavaScript navigation methods:</p>
                 <p className="text-xs text-muted-foreground">
-                  Note: <code>window.location</code> methods (<code>href</code>, <code>replace()</code>, <code>assign()</code>) cannot be intercepted due to browser security restrictions (read-only properties). 
-                  Only <code>window.open()</code>, <code>history.pushState()</code>, <code>history.replaceState()</code>, and click events can be intercepted.
+                  Note: <code>window.location</code> methods are intercepted via <code>beforeunload</code> event, which shows a browser confirmation dialog to block navigation. 
+                  <code>window.open()</code>, <code>history.pushState()</code>, <code>history.replaceState()</code>, and click events are directly intercepted.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Button
@@ -276,10 +276,9 @@ function App() {
                     }}
                     variant="outline"
                     size="sm"
-                    disabled
-                    title="Cannot be intercepted (browser security restriction)"
+                    title="Intercepted via beforeunload event"
                   >
-                    location.href - External (not intercepted)
+                    location.href - External
                   </Button>
                   <Button
                     onClick={() => {
@@ -287,46 +286,41 @@ function App() {
                     }}
                     variant="outline"
                     size="sm"
-                    disabled
-                    title="Cannot be intercepted (browser security restriction)"
+                    title="Intercepted via beforeunload event"
                   >
-                    location.href - Internal (not intercepted)
+                    location.href - Internal
                   </Button>
                   <Button
                     onClick={() => window.location.replace('https://stackoverflow.com')}
                     variant="outline"
                     size="sm"
-                    disabled
-                    title="Cannot be intercepted (browser security restriction)"
+                    title="Intercepted via beforeunload event"
                   >
-                    location.replace() - External (not intercepted)
+                    location.replace() - External
                   </Button>
                   <Button
                     onClick={() => window.location.replace('#/public/test')}
                     variant="outline"
                     size="sm"
-                    disabled
-                    title="Cannot be intercepted (browser security restriction)"
+                    title="Intercepted via beforeunload event"
                   >
-                    location.replace() - Hash (not intercepted)
+                    location.replace() - Hash
                   </Button>
                   <Button
                     onClick={() => window.location.assign('https://example.com')}
                     variant="outline"
                     size="sm"
-                    disabled
-                    title="Cannot be intercepted (browser security restriction)"
+                    title="Intercepted via beforeunload event"
                   >
-                    location.assign() - External (not intercepted)
+                    location.assign() - External
                   </Button>
                   <Button
                     onClick={() => window.location.assign('/another-internal')}
                     variant="outline"
                     size="sm"
-                    disabled
-                    title="Cannot be intercepted (browser security restriction)"
+                    title="Intercepted via beforeunload event"
                   >
-                    location.assign() - Internal (not intercepted)
+                    location.assign() - Internal
                   </Button>
                   <Button
                     onClick={() => history.pushState({}, '', 'https://google.com')}
