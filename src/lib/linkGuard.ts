@@ -3,52 +3,58 @@ export function setupLinkGuard(options: {
   enabled: boolean
   allowExternal?: boolean
   allowedDomains?: string[]
-}) {
-  if (!options.enabled) return
+}): () => void {
+  if (!options.enabled) {
+    // Return a no-op cleanup function when disabled
+    return () => {}
+  }
 
-  document.addEventListener(
-    'click',
-    (e) => {
-      const target = e.target as HTMLElement | null
-      const anchor = target?.closest('a[href]') as HTMLAnchorElement | null
-      if (!anchor) return
+  const clickHandler = (e: MouseEvent) => {
+    const target = e.target as HTMLElement | null
+    const anchor = target?.closest('a[href]') as HTMLAnchorElement | null
+    if (!anchor) return
 
-      const href = anchor.getAttribute('href')
-      if (!href) return
+    const href = anchor.getAttribute('href')
+    if (!href) return
 
-      // ignore hashes, javascript:, mailto, tel, etc
+    // ignore hashes, javascript:, mailto, tel, etc
+    if (
+      href.startsWith('#') ||
+      href.startsWith('javascript:') ||
+      href.startsWith('mailto:') ||
+      href.startsWith('tel:')
+    ) {
+      return
+    }
+
+    const url = new URL(href, window.location.href)
+
+    const isExternal = url.origin !== window.location.origin
+
+    if (isExternal) {
       if (
-        href.startsWith('#') ||
-        href.startsWith('javascript:') ||
-        href.startsWith('mailto:') ||
-        href.startsWith('tel:')
+        options.allowedDomains &&
+        options.allowedDomains.includes(url.hostname)
       ) {
         return
       }
 
-      const url = new URL(href, window.location.href)
+      // 🚫 BLOCK
+      e.preventDefault()
+      e.stopPropagation()
 
-      const isExternal = url.origin !== window.location.origin
+      // Optional: notify native layer
+      window.postMessage?.(
+        { type: 'LINK_BLOCKED', href: url.href },
+        '*'
+      )
+    }
+  }
 
-      if (isExternal) {
-        if (
-          options.allowedDomains &&
-          options.allowedDomains.includes(url.hostname)
-        ) {
-          return
-        }
+  document.addEventListener('click', clickHandler, true) // 👈 capture phase (important!)
 
-        // 🚫 BLOCK
-        e.preventDefault()
-        e.stopPropagation()
-
-        // Optional: notify native layer
-        window.postMessage?.(
-          { type: 'LINK_BLOCKED', href: url.href },
-          '*'
-        )
-      }
-    },
-    true // 👈 capture phase (important!)
-  )
+  // Return cleanup function to remove the listener
+  return () => {
+    document.removeEventListener('click', clickHandler, true)
+  }
 }
