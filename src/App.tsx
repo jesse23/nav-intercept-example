@@ -59,9 +59,9 @@ function App() {
   }, [])
 
   return (
-    <div className="flex min-h-svh w-full">
+    <div className="flex h-svh w-full overflow-hidden">
       {/* Left Side - Native App Message Bar */}
-      <div className="w-80 border-r bg-muted/30 flex flex-col">
+      <div className="w-80 border-r bg-muted/30 flex flex-col h-full">
         <div className="p-4 border-b bg-muted">
           <h2 className="text-lg font-semibold">Native App</h2>
           <p className="text-xs text-muted-foreground">Message Listener</p>
@@ -107,8 +107,8 @@ function App() {
       </div>
 
       {/* Right Side - Guest Panel */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex min-h-svh flex-col items-center justify-center gap-8 p-8">
+      <div className="flex-1 h-full overflow-y-auto">
+        <div className="flex flex-col items-center gap-8 p-8">
           <div className="flex flex-col gap-4 max-w-2xl w-full">
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold">Link Guard Test</h1>
