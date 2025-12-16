@@ -17,6 +17,7 @@ function App() {
   const [messages, setMessages] = useState<Message[]>([])
   const [splitPosition, setSplitPosition] = useState(60) // Percentage for native app panel
   const [isDragging, setIsDragging] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     // Configure link guard with current options
@@ -74,6 +75,19 @@ function App() {
 
     return () => {
       window.removeEventListener('message', handleMessage)
+    }
+  }, [])
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
     }
   }, [])
 
@@ -190,7 +204,10 @@ function App() {
       {/* Right Side - Guest Panel */}
       <div 
         className="flex w-full h-full overflow-y-auto transition-none"
-        style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${100 - splitPosition}%` : '100%' }}
+        style={{ 
+          width: isMobile ? '100%' : `${100 - splitPosition}%`,
+          flexShrink: isMobile ? undefined : 0
+        }}
       >
         <div className="flex flex-col items-center gap-8 p-8">
           <div className="flex flex-col gap-4 max-w-2xl w-full">
