@@ -42,12 +42,7 @@ const shouldBlockUrl = (urlString: string): { blocked: boolean; url?: URL; reaso
     const url = new URL(window.location.href)
     url.hash = urlString
     
-    // Check internal links
-    if (state.allowInternal === false) {
-      return { blocked: true, url, reason: 'internal_blocked' }
-    }
-
-    // Check sublocation filter
+    // Check sublocation filter FIRST (takes precedence over internal blocking)
     if (state.allowSubLocation && hashPath) {
       const expectedPrefix = `/${state.allowSubLocation}`
       const startsWithSubLocation = 
@@ -55,9 +50,18 @@ const shouldBlockUrl = (urlString: string): { blocked: boolean; url?: URL; reaso
         hashPath === expectedPrefix ||
         hashPath.startsWith(expectedPrefix + '?')
       
-      if (!startsWithSubLocation) {
+      if (startsWithSubLocation) {
+        // Matches allowed sublocation, allow it even if internal links are blocked
+        return { blocked: false }
+      } else {
+        // Doesn't match allowed sublocation, block it
         return { blocked: true, url, reason: 'sublocation_mismatch' }
       }
+    }
+
+    // If no sublocation filter is set, check internal links blocking
+    if (state.allowInternal === false) {
+      return { blocked: true, url, reason: 'internal_blocked' }
     }
 
     return { blocked: false }
@@ -82,12 +86,7 @@ const shouldBlockUrl = (urlString: string): { blocked: boolean; url?: URL; reaso
       return { blocked: false }
     }
 
-    // Check internal links
-    if (state.allowInternal === false) {
-      return { blocked: true, url, reason: 'internal_blocked' }
-    }
-
-    // Check sublocation filter for hash-based routing
+    // Check sublocation filter FIRST for hash-based routing (takes precedence over internal blocking)
     if (state.allowSubLocation && hashPath) {
       const expectedPrefix = `/${state.allowSubLocation}`
       const startsWithSubLocation = 
@@ -95,9 +94,18 @@ const shouldBlockUrl = (urlString: string): { blocked: boolean; url?: URL; reaso
         hashPath === expectedPrefix ||
         hashPath.startsWith(expectedPrefix + '?')
       
-      if (!startsWithSubLocation) {
+      if (startsWithSubLocation) {
+        // Matches allowed sublocation, allow it even if internal links are blocked
+        return { blocked: false }
+      } else {
+        // Doesn't match allowed sublocation, block it
         return { blocked: true, url, reason: 'sublocation_mismatch' }
       }
+    }
+
+    // If no sublocation filter is set, check internal links blocking
+    if (state.allowInternal === false) {
+      return { blocked: true, url, reason: 'internal_blocked' }
     }
 
     return { blocked: false }
