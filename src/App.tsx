@@ -78,7 +78,7 @@ function App() {
   return (
     <div className="flex h-svh w-full overflow-hidden">
       {/* Left Side - Native App Message Bar */}
-      <div className="w-80 border-r bg-muted/30 flex flex-col h-full">
+      <div className="hidden md:flex md:w-[60%] border-r bg-muted/30 flex-col h-full">
         <div className="p-4 border-b bg-muted">
           <h2 className="text-lg font-semibold">Native App</h2>
           <p className="text-xs text-muted-foreground">Message Listener</p>
@@ -121,10 +121,22 @@ function App() {
             </button>
           </div>
         )}
+        {/* Instructions */}
+        <div className="p-4 border-t bg-muted/30">
+          <p className="text-sm font-semibold mb-2">Instructions:</p>
+          <ol className="text-xs text-muted-foreground list-decimal list-inside space-y-1">
+            <li>Check "Block External Links" - external links should be blocked</li>
+            <li>Check "Block Internal Links" - internal links should be blocked</li>
+            <li>Enter an allowed external URL - that domain should work even if external blocking is enabled</li>
+            <li>Set "Allowed SubLocation" to "admin" - only #/admin/* links will work, others blocked</li>
+            <li>Test JavaScript APIs (window.open, location.href, history.pushState, etc.) - they should also be blocked</li>
+            <li>Uncheck all blocking options - all navigation should work normally</li>
+          </ol>
+        </div>
       </div>
 
       {/* Right Side - Guest Panel */}
-      <div className="flex-1 h-full overflow-y-auto">
+      <div className="flex md:w-[40%] w-full h-full overflow-y-auto">
         <div className="flex flex-col items-center gap-8 p-8">
           <div className="flex flex-col gap-4 max-w-2xl w-full">
             <div className="flex items-center justify-between">
@@ -200,7 +212,7 @@ function App() {
 
             {/* Native &lt;a&gt; Element Examples */}
             <div className="flex flex-col gap-4 p-4 border rounded-lg">
-              <h2 className="text-lg font-semibold">Native &lt;a&gt; Elements</h2>
+              <h2 className="text-lg font-semibold">HTML &lt;a&gt; tag</h2>
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
                   <p className="text-xs font-medium text-muted-foreground">External</p>
@@ -250,7 +262,7 @@ function App() {
 
             {/* shadcn Button as Link Examples */}
             <div className="flex flex-col gap-4 p-4 border rounded-lg">
-              <h2 className="text-lg font-semibold">shadcn Button (asChild with &lt;a&gt;)</h2>
+              <h2 className="text-lg font-semibold">React Button (shadcn)</h2>
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
                   <p className="text-xs font-medium text-muted-foreground">External</p>
@@ -496,21 +508,6 @@ function App() {
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Instructions */}
-            <div className="p-4 bg-muted rounded-lg text-sm">
-              <p className="font-semibold mb-2">How to test:</p>
-              <ol className="list-decimal list-inside space-y-1">
-                <li>Enable the Link Guard checkbox</li>
-                <li>Try clicking the external links - they should be blocked</li>
-                <li>Try clicking the internal links - they should work normally</li>
-                <li>Enable "Allow example.com" checkbox - example.com link should work, others still blocked</li>
-                <li>Enable "Block Internal Links" - all internal links should be blocked</li>
-                <li>Set "Allow SubLocation" to "admin" - only #/admin/* links will work, others blocked</li>
-                <li>Test JavaScript APIs (window.open, location.href, history.pushState, etc.) - they should also be blocked</li>
-                <li>Disable the guard and all links should work normally</li>
-              </ol>
             </div>
           </div>
         </div>
