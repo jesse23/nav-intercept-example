@@ -47,37 +47,30 @@ function App() {
       allowedDomains,
       allowInternal: blockInternal ? false : undefined,
       allowSubLocation: allowSubLocation.trim() || undefined,
-    })
-  }, [blockExternal, blockInternal, allowedExternalUrl, allowSubLocation])
-
-  useEffect(() => {
-    // Listen for postMessage events (mimicking native app)
-    const handleMessage = (event: MessageEvent) => {
-      // Only show messages from navigationInterceptor (type: 'LINK_BLOCKED')
-      if (
-        event.data && 
-        typeof event.data === 'object' && 
-        event.data.type === 'LINK_BLOCKED'
-      ) {
+      onBlocked: (info) => {
+        // Update messages state
         setMessages((prev) => {
           const newMessage: Message = {
             id: Date.now() + Math.random(), // Generate unique ID
-            type: event.data.type,
-            data: event.data,
+            type: 'LINK_BLOCKED',
+            data: info,
             timestamp: new Date(),
           }
           // Keep only last 50 messages (latest at bottom)
           return [...prev, newMessage].slice(-50)
         })
-      }
-    }
-
-    window.addEventListener('message', handleMessage)
-
-    return () => {
-      window.removeEventListener('message', handleMessage)
-    }
-  }, [])
+        
+        // Post message for cross-origin communication (mimicking native app)
+        window.postMessage?.(
+          {
+            type: 'LINK_BLOCKED',
+            ...info
+          },
+          '*'
+        )
+      },
+    })
+  }, [blockExternal, blockInternal, allowedExternalUrl, allowSubLocation])
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {

@@ -1,11 +1,20 @@
 // navigationInterceptor.ts - Pure JavaScript singleton library for intercepting navigation
 
+export interface BlockedNavigationInfo {
+  href: string
+  reason?: string
+  method?: string
+}
+
+export type OnBlockedCallback = (info: BlockedNavigationInfo) => void
+
 interface NavigationInterceptorOptions {
   enabled: boolean
   allowExternal?: boolean
   allowedDomains?: string[]
   allowInternal?: boolean
   allowSubLocation?: string
+  onBlocked?: OnBlockedCallback
 }
 
 interface NavigationInterceptorState {
@@ -14,6 +23,7 @@ interface NavigationInterceptorState {
   allowedDomains?: string[]
   allowInternal?: boolean
   allowSubLocation?: string
+  onBlocked?: OnBlockedCallback
 }
 
 // Singleton state
@@ -126,15 +136,19 @@ const shouldBlockUrl = (urlString: string): { blocked: boolean; url?: URL; reaso
 
 // Helper function to notify about blocked navigation
 const notifyBlocked = (url: URL, reason?: string, method?: string) => {
-  window.postMessage?.(
-    { 
-      type: 'LINK_BLOCKED', 
-      href: url.href, 
-      reason,
-      method 
-    },
-    '*'
-  )
+  const info: BlockedNavigationInfo = {
+    href: url.href,
+    reason,
+    method,
+  }
+
+  // Use custom callback if provided, otherwise use default console.log
+  if (state.onBlocked) {
+    state.onBlocked(info)
+  } else {
+    // Default behavior: console.log
+    console.log('[NavigationInterceptor] Blocked navigation:', info)
+  }
 }
 
 // Click handler - checks state before blocking
@@ -289,6 +303,7 @@ export const navigationInterceptor = {
     state.allowedDomains = options.allowedDomains
     state.allowInternal = options.allowInternal
     state.allowSubLocation = options.allowSubLocation
+    state.onBlocked = options.onBlocked
   },
 
   /**
@@ -321,6 +336,7 @@ export const navigationInterceptor = {
     state.allowedDomains = undefined
     state.allowInternal = undefined
     state.allowSubLocation = undefined
+    state.onBlocked = undefined
   },
 }
 
