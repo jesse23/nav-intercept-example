@@ -132,13 +132,13 @@ function App() {
 
   return (
     <div className="flex h-svh w-full overflow-hidden split-container">
-      {/* Left Side - Native App Message Bar */}
+      {/* Left Side - Host App Example Message Bar */}
       <div 
         className="hidden md:flex border-r bg-muted/30 flex-col h-full transition-none"
         style={{ width: `${splitPosition}%` }}
       >
         <div className="p-4 border-b bg-muted">
-          <h2 className="text-lg font-semibold">Native App</h2>
+          <h2 className="text-lg font-semibold">Host App Example</h2>
           <p className="text-xs text-muted-foreground">Message Listener</p>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
