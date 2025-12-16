@@ -2,8 +2,7 @@
 
 export interface BlockedNavigationInfo {
   href: string
-  reason?: string
-  method?: string
+  source?: string
 }
 
 export type OnBlockedCallback = (info: BlockedNavigationInfo) => void
@@ -134,12 +133,23 @@ const shouldBlockUrl = (urlString: string): { blocked: boolean; url?: URL; reaso
   }
 }
 
+// Helper function to convert URL to relative path if it's internal
+const getRelativeHref = (url: URL): string => {
+  const currentOrigin = window.location.origin
+  if (url.origin === currentOrigin) {
+    // Internal URL - return relative path
+    const path = url.pathname + url.search + url.hash
+    return path || '/'
+  }
+  // External URL - return full href
+  return url.href
+}
+
 // Helper function to notify about blocked navigation
-const notifyBlocked = (url: URL, reason?: string, method?: string) => {
+const notifyBlocked = (url: URL, source?: string) => {
   const info: BlockedNavigationInfo = {
-    href: url.href,
-    reason,
-    method,
+    href: getRelativeHref(url),
+    source,
   }
 
   // Use custom callback if provided, otherwise use default console.log
@@ -183,7 +193,7 @@ const clickHandler = (e: MouseEvent) => {
     // 🚫 BLOCK
     e.preventDefault()
     e.stopPropagation()
-    notifyBlocked(checkResult.url, checkResult.reason, 'click')
+    notifyBlocked(checkResult.url, 'click')
     return
   }
 }
@@ -197,7 +207,7 @@ const hashChangeHandler = (_e: HashChangeEvent) => {
   
   if (checkResult.blocked && checkResult.url) {
     // Notify about the blocked navigation attempt
-    notifyBlocked(checkResult.url, checkResult.reason, 'hashchange')
+    notifyBlocked(checkResult.url, 'hashchange')
     
     // Try to prevent hash change by going back
     try {
@@ -221,7 +231,7 @@ const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
   
   if (checkResult.blocked && checkResult.url) {
     // Notify about the blocked navigation attempt
-    notifyBlocked(checkResult.url, checkResult.reason, 'location.href')
+    notifyBlocked(checkResult.url, 'location.href')
     
     // Best practice: preventDefault() + set returnValue for legacy support
     // Note: The browser will show its own generic message - we cannot customize it
@@ -237,7 +247,7 @@ const interceptedWindowOpen = function(url?: string | URL, target?: string, feat
     const urlString = typeof url === 'string' ? url : url.href
     const checkResult = shouldBlockUrl(urlString)
     if (checkResult.blocked && checkResult.url) {
-      notifyBlocked(checkResult.url, checkResult.reason, 'window.open')
+      notifyBlocked(checkResult.url, 'window.open')
       return null
     }
   }
@@ -257,7 +267,7 @@ const interceptedPushState = function(state: any, title: string, url?: string | 
     }
     const checkResult = shouldBlockUrl(fullUrl)
     if (checkResult.blocked && checkResult.url) {
-      notifyBlocked(checkResult.url, checkResult.reason, 'history.pushState')
+      notifyBlocked(checkResult.url, 'history.pushState')
       return
     }
   }
@@ -277,7 +287,7 @@ const interceptedReplaceState = function(state: any, title: string, url?: string
     }
     const checkResult = shouldBlockUrl(fullUrl)
     if (checkResult.blocked && checkResult.url) {
-      notifyBlocked(checkResult.url, checkResult.reason, 'history.replaceState')
+      notifyBlocked(checkResult.url, 'history.replaceState')
       return
     }
   }
