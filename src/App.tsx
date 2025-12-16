@@ -15,6 +15,8 @@ function App() {
   const [allowedExternalUrl, setAllowedExternalUrl] = useState("")
   const [allowSubLocation, setAllowSubLocation] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
+  const [splitPosition, setSplitPosition] = useState(60) // Percentage for native app panel
+  const [isDragging, setIsDragging] = useState(false)
 
   useEffect(() => {
     // Configure link guard with current options
@@ -75,10 +77,52 @@ function App() {
     }
   }, [])
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true)
+    e.preventDefault()
+  }
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return
+      
+      const container = document.querySelector('.split-container')
+      if (!container) return
+      
+      const containerWidth = container.clientWidth
+      const newPosition = (e.clientX / containerWidth) * 100
+      
+      // Clamp between 20% and 80%
+      const clampedPosition = Math.max(20, Math.min(80, newPosition))
+      setSplitPosition(clampedPosition)
+    }
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+    }
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+  }, [isDragging])
+
   return (
-    <div className="flex h-svh w-full overflow-hidden">
+    <div className="flex h-svh w-full overflow-hidden split-container">
       {/* Left Side - Native App Message Bar */}
-      <div className="hidden md:flex md:w-[60%] border-r bg-muted/30 flex-col h-full">
+      <div 
+        className="hidden md:flex border-r bg-muted/30 flex-col h-full transition-none"
+        style={{ width: `${splitPosition}%` }}
+      >
         <div className="p-4 border-b bg-muted">
           <h2 className="text-lg font-semibold">Native App</h2>
           <p className="text-xs text-muted-foreground">Message Listener</p>
@@ -135,8 +179,19 @@ function App() {
         </div>
       </div>
 
+      {/* Draggable Splitter */}
+      <div
+        className="hidden md:flex w-1 bg-border hover:bg-primary/50 cursor-col-resize transition-colors relative group"
+        onMouseDown={handleMouseDown}
+      >
+        <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-1 group-hover:bg-primary" />
+      </div>
+
       {/* Right Side - Guest Panel */}
-      <div className="flex md:w-[40%] w-full h-full overflow-y-auto">
+      <div 
+        className="flex w-full h-full overflow-y-auto transition-none"
+        style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${100 - splitPosition}%` : '100%' }}
+      >
         <div className="flex flex-col items-center gap-8 p-8">
           <div className="flex flex-col gap-4 max-w-2xl w-full">
             <div className="flex items-center justify-between">
