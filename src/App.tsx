@@ -284,48 +284,45 @@ function App() {
 
             {/* Native &lt;a&gt; Element Examples */}
             <div className="flex flex-col gap-4 p-4 border rounded-lg">
-              <h2 className="text-lg font-semibold">HTML &lt;a&gt; tag</h2>
+              <h2 className="text-lg font-semibold">HTML Tag Navigation</h2>
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
                   <p className="text-xs font-medium text-muted-foreground">External</p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-4">
                     <a 
-                      href="https://github.com" 
+                      href="https://google.com" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="text-primary underline hover:no-underline"
                     >
-                      github.com
+                      google.com
                     </a>
                     <a 
-                      href="https://stackoverflow.com" 
+                      href="https://bing.com" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="text-primary underline hover:no-underline"
                     >
-                      stackoverflow.com
+                      bing.com
                     </a>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
                   <p className="text-xs font-medium text-muted-foreground">Internal</p>
                   <div className="flex flex-wrap gap-2">
-                    <a href="/another-page" className="text-primary underline hover:no-underline">
-                      /another-page
+                    <a href="/internal-page" className="text-primary underline hover:no-underline">
+                      /internal-page
                     </a>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
                   <p className="text-xs font-medium text-muted-foreground">Hash</p>
-                  <div className="flex flex-wrap gap-2">
-                    <a href="#/admin/users" className="text-primary underline hover:no-underline">
-                      #/admin/users
+                  <div className="flex flex-wrap gap-4">
+                    <a href="#/admin/dashboard" className="text-primary underline hover:no-underline">
+                      #/admin/dashboard
                     </a>
-                    <a href="#/public/about" className="text-primary underline hover:no-underline">
-                      #/public/about
-                    </a>
-                    <a href="#/settings" className="text-primary underline hover:no-underline">
-                      #/settings
+                    <a href="#/settings/advanced" className="text-primary underline hover:no-underline">
+                      #/settings/advanced
                     </a>
                   </div>
                 </div>
@@ -334,19 +331,19 @@ function App() {
 
             {/* shadcn Button as Link Examples */}
             <div className="flex flex-col gap-4 p-4 border rounded-lg">
-              <h2 className="text-lg font-semibold">React Button (shadcn)</h2>
+              <h2 className="text-lg font-semibold">React Component Navigation</h2>
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
                   <p className="text-xs font-medium text-muted-foreground">External</p>
                   <div className="flex flex-wrap gap-2">
                     <Button asChild variant="default">
-                      <a href="https://example.com" target="_blank" rel="noopener noreferrer">
-                        example.com
+                      <a href="https://google.com" target="_blank" rel="noopener noreferrer">
+                        google.com
                       </a>
                     </Button>
                     <Button asChild variant="outline">
-                      <a href="https://google.com" target="_blank" rel="noopener noreferrer">
-                        google.com
+                      <a href="https://bing.com" target="_blank" rel="noopener noreferrer">
+                        bing.com
                       </a>
                     </Button>
                   </div>
@@ -366,7 +363,7 @@ function App() {
                       <a href="#/admin/dashboard">#/admin/dashboard</a>
                     </Button>
                     <Button asChild variant="outline">
-                      <a href="#/public/home">#/public/home</a>
+                      <a href="#/settings/advanced">#/settings/advanced</a>
                     </Button>
                   </div>
                 </div>
@@ -377,8 +374,6 @@ function App() {
             <div className="flex flex-col gap-4 p-4 border rounded-lg">
               <h2 className="text-lg font-semibold">JavaScript API Navigation</h2>
               <div className="flex flex-col gap-4">
-                <p className="text-sm font-medium text-muted-foreground">Test JavaScript navigation methods:</p>
-                
                 {/* Directly intercepted APIs */}
                 <div className="flex flex-col gap-2">
                   <p className="text-xs text-muted-foreground">
@@ -394,20 +389,23 @@ function App() {
                           onClick={() => window.open('https://google.com', '_blank')}
                           variant="outline"
                           size="sm"
+                          title="https://google.com"
                         >
                           External
                         </Button>
                         <Button
-                          onClick={() => window.open('/test-page', '_self')}
+                          onClick={() => window.open('/internal-page', '_self')}
                           variant="outline"
                           size="sm"
+                          title="/internal-page"
                         >
                           Internal
                         </Button>
                         <Button
-                          onClick={() => window.open('#/admin/test', '_self')}
+                          onClick={() => window.open('#/admin/dashboard', '_self')}
                           variant="outline"
                           size="sm"
+                          title="#/admin/dashboard"
                         >
                           Hash
                         </Button>
@@ -422,20 +420,23 @@ function App() {
                           onClick={() => history.pushState({}, '', 'https://google.com')}
                           variant="outline"
                           size="sm"
+                          title="https://google.com"
                         >
                           External
                         </Button>
                         <Button
-                          onClick={() => history.pushState({}, '', '/test-push')}
+                          onClick={() => history.pushState({}, '', '/internal-page')}
                           variant="outline"
                           size="sm"
+                          title="/internal-page"
                         >
                           Internal
                         </Button>
                         <Button
-                          onClick={() => history.pushState({}, '', '#/admin/push')}
+                          onClick={() => history.pushState({}, '', '#/admin/dashboard')}
                           variant="outline"
                           size="sm"
+                          title="#/admin/dashboard"
                         >
                           Hash
                         </Button>
@@ -447,23 +448,26 @@ function App() {
                       <p className="text-xs font-medium text-muted-foreground">history.replaceState()</p>
                       <div className="flex flex-wrap gap-2">
                         <Button
-                          onClick={() => history.replaceState({}, '', 'https://github.com')}
+                          onClick={() => history.replaceState({}, '', 'https://google.com')}
                           variant="outline"
                           size="sm"
+                          title="https://google.com"
                         >
                           External
                         </Button>
                         <Button
-                          onClick={() => history.replaceState({}, '', '/test-replace')}
+                          onClick={() => history.replaceState({}, '', '/internal-page')}
                           variant="outline"
                           size="sm"
+                          title="/internal-page"
                         >
                           Internal
                         </Button>
                         <Button
-                          onClick={() => history.replaceState({}, '', '#/public/replace')}
+                          onClick={() => history.replaceState({}, '', '#/admin/dashboard')}
                           variant="outline"
                           size="sm"
+                          title="#/admin/dashboard"
                         >
                           Hash
                         </Button>
@@ -485,31 +489,31 @@ function App() {
                       <div className="flex flex-wrap gap-2">
                         <Button
                           onClick={() => {
-                            (window.location as any).href = 'https://github.com'
+                            (window.location as any).href = 'https://google.com'
                           }}
                           variant="outline"
                           size="sm"
-                          title="Intercepted via beforeunload event"
+                          title="https://google.com"
                         >
                           External
                         </Button>
                         <Button
                           onClick={() => {
-                            (window.location as any).href = '/test-page'
+                            (window.location as any).href = '/internal-page'
                           }}
                           variant="outline"
                           size="sm"
-                          title="Intercepted via beforeunload event"
+                          title="/internal-page"
                         >
                           Internal
                         </Button>
                         <Button
                           onClick={() => {
-                            (window.location as any).href = '#/public/test'
+                            (window.location as any).href = '#/admin/dashboard'
                           }}
                           variant="outline"
                           size="sm"
-                          title="Intercepted via hashchange event"
+                          title="#/admin/dashboard"
                         >
                           Hash
                         </Button>
@@ -521,26 +525,26 @@ function App() {
                       <p className="text-xs font-medium text-muted-foreground">location.replace()</p>
                       <div className="flex flex-wrap gap-2">
                         <Button
-                          onClick={() => window.location.replace('https://stackoverflow.com')}
+                          onClick={() => window.location.replace('https://google.com')}
                           variant="outline"
                           size="sm"
-                          title="Intercepted via beforeunload event"
+                          title="https://google.com"
                         >
                           External
                         </Button>
                         <Button
-                          onClick={() => window.location.replace('/another-internal')}
+                          onClick={() => window.location.replace('/internal-page')}
                           variant="outline"
                           size="sm"
-                          title="Intercepted via beforeunload event"
+                          title="/internal-page"
                         >
                           Internal
                         </Button>
                         <Button
-                          onClick={() => window.location.replace('#/public/test')}
+                          onClick={() => window.location.replace('#/admin/dashboard')}
                           variant="outline"
                           size="sm"
-                          title="Intercepted via hashchange event"
+                          title="#/admin/dashboard"
                         >
                           Hash
                         </Button>
@@ -552,26 +556,26 @@ function App() {
                       <p className="text-xs font-medium text-muted-foreground">location.assign()</p>
                       <div className="flex flex-wrap gap-2">
                         <Button
-                          onClick={() => window.location.assign('https://example.com')}
+                          onClick={() => window.location.assign('https://google.com')}
                           variant="outline"
                           size="sm"
-                          title="Intercepted via beforeunload event"
+                          title="https://google.com"
                         >
                           External
                         </Button>
                         <Button
-                          onClick={() => window.location.assign('/another-internal')}
+                          onClick={() => window.location.assign('/internal-page')}
                           variant="outline"
                           size="sm"
-                          title="Intercepted via beforeunload event"
+                          title="/internal-page"
                         >
                           Internal
                         </Button>
                         <Button
-                          onClick={() => window.location.assign('#/admin/assign')}
+                          onClick={() => window.location.assign('#/admin/dashboard')}
                           variant="outline"
                           size="sm"
-                          title="Intercepted via hashchange event"
+                          title="#/admin/dashboard"
                         >
                           Hash
                         </Button>
