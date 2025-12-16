@@ -252,101 +252,190 @@ function App() {
                   Note: <code>window.location</code> methods are intercepted via <code>beforeunload</code> event, which shows a browser confirmation dialog to block navigation. 
                   <code>window.open()</code>, <code>history.pushState()</code>, <code>history.replaceState()</code>, and click events are directly intercepted.
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    onClick={() => window.open('https://google.com', '_blank')}
-                    variant="outline"
-                    size="sm"
-                  >
-                    window.open() - External
-                  </Button>
-                  <Button
-                    onClick={() => window.open('#/admin/test', '_self')}
-                    variant="outline"
-                    size="sm"
-                  >
-                    window.open() - Hash Route
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      (window.location as any).href = 'https://github.com'
-                    }}
-                    variant="outline"
-                    size="sm"
-                    title="Intercepted via beforeunload event"
-                  >
-                    location.href - External
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      (window.location as any).href = '/test-page'
-                    }}
-                    variant="outline"
-                    size="sm"
-                    title="Intercepted via beforeunload event"
-                  >
-                    location.href - Internal
-                  </Button>
-                  <Button
-                    onClick={() => window.location.replace('https://stackoverflow.com')}
-                    variant="outline"
-                    size="sm"
-                    title="Intercepted via beforeunload event"
-                  >
-                    location.replace() - External
-                  </Button>
-                  <Button
-                    onClick={() => window.location.replace('#/public/test')}
-                    variant="outline"
-                    size="sm"
-                    title="Intercepted via beforeunload event"
-                  >
-                    location.replace() - Hash
-                  </Button>
-                  <Button
-                    onClick={() => window.location.assign('https://example.com')}
-                    variant="outline"
-                    size="sm"
-                    title="Intercepted via beforeunload event"
-                  >
-                    location.assign() - External
-                  </Button>
-                  <Button
-                    onClick={() => window.location.assign('/another-internal')}
-                    variant="outline"
-                    size="sm"
-                    title="Intercepted via beforeunload event"
-                  >
-                    location.assign() - Internal
-                  </Button>
-                  <Button
-                    onClick={() => history.pushState({}, '', 'https://google.com')}
-                    variant="outline"
-                    size="sm"
-                  >
-                    history.pushState() - External
-                  </Button>
-                  <Button
-                    onClick={() => history.pushState({}, '', '#/admin/push')}
-                    variant="outline"
-                    size="sm"
-                  >
-                    history.pushState() - Hash
-                  </Button>
-                  <Button
-                    onClick={() => history.replaceState({}, '', 'https://github.com')}
-                    variant="outline"
-                    size="sm"
-                  >
-                    history.replaceState() - External
-                  </Button>
-                  <Button
-                    onClick={() => history.replaceState({}, '', '#/public/replace')}
-                    variant="outline"
-                    size="sm"
-                  >
-                    history.replaceState() - Hash
-                  </Button>
+                
+                <div className="space-y-4">
+                  {/* window.open() */}
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xs font-medium text-muted-foreground">window.open()</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        onClick={() => window.open('https://google.com', '_blank')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        External
+                      </Button>
+                      <Button
+                        onClick={() => window.open('/test-page', '_self')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Internal
+                      </Button>
+                      <Button
+                        onClick={() => window.open('#/admin/test', '_self')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Hash
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* location.href */}
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xs font-medium text-muted-foreground">location.href</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        onClick={() => {
+                          (window.location as any).href = 'https://github.com'
+                        }}
+                        variant="outline"
+                        size="sm"
+                        title="Intercepted via beforeunload event"
+                      >
+                        External
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          (window.location as any).href = '/test-page'
+                        }}
+                        variant="outline"
+                        size="sm"
+                        title="Intercepted via beforeunload event"
+                      >
+                        Internal
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          (window.location as any).href = '#/public/test'
+                        }}
+                        variant="outline"
+                        size="sm"
+                        title="Intercepted via hashchange event"
+                      >
+                        Hash
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* location.replace() */}
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xs font-medium text-muted-foreground">location.replace()</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        onClick={() => window.location.replace('https://stackoverflow.com')}
+                        variant="outline"
+                        size="sm"
+                        title="Intercepted via beforeunload event"
+                      >
+                        External
+                      </Button>
+                      <Button
+                        onClick={() => window.location.replace('/another-internal')}
+                        variant="outline"
+                        size="sm"
+                        title="Intercepted via beforeunload event"
+                      >
+                        Internal
+                      </Button>
+                      <Button
+                        onClick={() => window.location.replace('#/public/test')}
+                        variant="outline"
+                        size="sm"
+                        title="Intercepted via hashchange event"
+                      >
+                        Hash
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* location.assign() */}
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xs font-medium text-muted-foreground">location.assign()</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        onClick={() => window.location.assign('https://example.com')}
+                        variant="outline"
+                        size="sm"
+                        title="Intercepted via beforeunload event"
+                      >
+                        External
+                      </Button>
+                      <Button
+                        onClick={() => window.location.assign('/another-internal')}
+                        variant="outline"
+                        size="sm"
+                        title="Intercepted via beforeunload event"
+                      >
+                        Internal
+                      </Button>
+                      <Button
+                        onClick={() => window.location.assign('#/admin/assign')}
+                        variant="outline"
+                        size="sm"
+                        title="Intercepted via hashchange event"
+                      >
+                        Hash
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* history.pushState() */}
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xs font-medium text-muted-foreground">history.pushState()</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        onClick={() => history.pushState({}, '', 'https://google.com')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        External
+                      </Button>
+                      <Button
+                        onClick={() => history.pushState({}, '', '/test-push')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Internal
+                      </Button>
+                      <Button
+                        onClick={() => history.pushState({}, '', '#/admin/push')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Hash
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* history.replaceState() */}
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xs font-medium text-muted-foreground">history.replaceState()</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        onClick={() => history.replaceState({}, '', 'https://github.com')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        External
+                      </Button>
+                      <Button
+                        onClick={() => history.replaceState({}, '', '/test-replace')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Internal
+                      </Button>
+                      <Button
+                        onClick={() => history.replaceState({}, '', '#/public/replace')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Hash
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
