@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { setupLinkGuard } from "@/lib/linkGuard"
+import { linkGuard } from "@/lib/linkGuard"
 
 interface Message {
   id: number
@@ -17,16 +17,13 @@ function App() {
   const [messages, setMessages] = useState<Message[]>([])
 
   useEffect(() => {
-    // Setup link guard with current options and get cleanup function
-    const cleanup = setupLinkGuard({
+    // Configure link guard with current options
+    linkGuard.configure({
       enabled: guardEnabled,
       allowedDomains: allowExampleCom ? ["example.com"] : undefined,
       allowInternal: blockInternal ? false : undefined,
       allowSubLocation: allowSubLocation || undefined,
     })
-    
-    // Return cleanup function to remove event listener when disabled or component unmounts
-    return cleanup
   }, [guardEnabled, allowExampleCom, blockInternal, allowSubLocation])
 
   useEffect(() => {
