@@ -139,7 +139,19 @@ function App() {
       >
         <div className="p-4 border-b bg-muted">
           <h2 className="text-lg font-semibold">Host App Example</h2>
-          <p className="text-xs text-muted-foreground">Message Listener</p>
+          <div className="mt-3 pt-3 border-t">
+            <ol className="text-xs text-muted-foreground list-decimal list-inside space-y-1">
+              <li>Check "Block External Links" - external links should be blocked</li>
+              <li>Check "Block Internal Links" - internal links should be blocked</li>
+              <li>Enter an allowed external URL - that domain should work even if external blocking is enabled</li>
+              <li>Set "Allowed SubLocation" to "admin" - only #/admin/* links will work, others blocked</li>
+              <li>Test JavaScript APIs (window.open, location.href, history.pushState, etc.) - they should also be blocked</li>
+              <li>Uncheck all blocking options - all navigation should work normally</li>
+            </ol>
+          </div>
+        </div>
+        <div className="px-4 pt-4 pb-2 bg-muted/30">
+          <h3 className="text-xs font-semibold">Message Listener</h3>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
           {messages.length === 0 ? (
@@ -179,18 +191,6 @@ function App() {
             </button>
           </div>
         )}
-        {/* Instructions */}
-        <div className="p-4 border-t bg-muted/30">
-          <p className="text-sm font-semibold mb-2">Instructions:</p>
-          <ol className="text-xs text-muted-foreground list-decimal list-inside space-y-1">
-            <li>Check "Block External Links" - external links should be blocked</li>
-            <li>Check "Block Internal Links" - internal links should be blocked</li>
-            <li>Enter an allowed external URL - that domain should work even if external blocking is enabled</li>
-            <li>Set "Allowed SubLocation" to "admin" - only #/admin/* links will work, others blocked</li>
-            <li>Test JavaScript APIs (window.open, location.href, history.pushState, etc.) - they should also be blocked</li>
-            <li>Uncheck all blocking options - all navigation should work normally</li>
-          </ol>
-        </div>
       </div>
 
       {/* Draggable Splitter */}
