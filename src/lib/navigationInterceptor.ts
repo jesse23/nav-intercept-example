@@ -1,6 +1,6 @@
-// linkGuard.ts - Pure JavaScript singleton library for intercepting navigation
+// navigationInterceptor.ts - Pure JavaScript singleton library for intercepting navigation
 
-interface LinkGuardOptions {
+interface NavigationInterceptorOptions {
   enabled: boolean
   allowExternal?: boolean
   allowedDomains?: string[]
@@ -8,7 +8,7 @@ interface LinkGuardOptions {
   allowSubLocation?: string
 }
 
-interface LinkGuardState {
+interface NavigationInterceptorState {
   enabled: boolean
   allowExternal?: boolean
   allowedDomains?: string[]
@@ -17,7 +17,7 @@ interface LinkGuardState {
 }
 
 // Singleton state
-const state: LinkGuardState = {
+const state: NavigationInterceptorState = {
   enabled: false,
 }
 
@@ -30,7 +30,7 @@ const originals = {
 
 // Helper function to check if a URL should be blocked
 const shouldBlockUrl = (urlString: string): { blocked: boolean; url?: URL; reason?: string } => {
-  // If guard is disabled, don't block anything
+  // If interceptor is disabled, don't block anything
   if (!state.enabled) {
     return { blocked: false }
   }
@@ -279,11 +279,11 @@ window.addEventListener('hashchange', hashChangeHandler)
 window.addEventListener('beforeunload', beforeUnloadHandler)
 
 // Public API
-export const linkGuard = {
+export const navigationInterceptor = {
   /**
-   * Configure and enable/disable the link guard
+   * Configure and enable/disable the navigation interceptor
    */
-  configure(options: LinkGuardOptions): void {
+  configure(options: NavigationInterceptorOptions): void {
     state.enabled = options.enabled
     state.allowExternal = options.allowExternal
     state.allowedDomains = options.allowedDomains
@@ -292,14 +292,14 @@ export const linkGuard = {
   },
 
   /**
-   * Enable the link guard with current configuration
+   * Enable the navigation interceptor with current configuration
    */
   enable(): void {
     state.enabled = true
   },
 
   /**
-   * Disable the link guard (interceptors remain active but won't block)
+   * Disable the navigation interceptor (interceptors remain active but won't block)
    */
   disable(): void {
     state.enabled = false
@@ -308,7 +308,7 @@ export const linkGuard = {
   /**
    * Get current state (read-only)
    */
-  getState(): Readonly<LinkGuardState> {
+  getState(): Readonly<NavigationInterceptorState> {
     return { ...state }
   },
 
@@ -325,11 +325,12 @@ export const linkGuard = {
 }
 
 // Legacy API for backward compatibility
-export function setupLinkGuard(options: LinkGuardOptions): () => void {
-  linkGuard.configure(options)
+export function setupNavigationInterceptor(options: NavigationInterceptorOptions): () => void {
+  navigationInterceptor.configure(options)
   
-  // Return a cleanup function that disables the guard
+  // Return a cleanup function that disables the interceptor
   return () => {
-    linkGuard.disable()
+    navigationInterceptor.disable()
   }
 }
+

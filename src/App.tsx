@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { linkGuard } from "@/lib/linkGuard"
+import { navigationInterceptor } from "@/lib/navigationInterceptor"
 
 interface Message {
   id: number
@@ -21,8 +21,8 @@ function App() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Configure link guard with current options
-    // Guard is always enabled (interceptors are always active), but blocking depends on settings
+    // Configure navigation interceptor with current options
+    // Interceptor is always enabled (interceptors are always active), but blocking depends on settings
     let allowedDomains: string[] | undefined = undefined
     
     if (blockExternal) {
@@ -42,7 +42,7 @@ function App() {
     }
     // If not blocking external, allowedDomains stays undefined (allow all)
     
-    linkGuard.configure({
+    navigationInterceptor.configure({
       enabled: true, // Interceptors are always active
       allowedDomains,
       allowInternal: blockInternal ? false : undefined,
@@ -53,7 +53,7 @@ function App() {
   useEffect(() => {
     // Listen for postMessage events (mimicking native app)
     const handleMessage = (event: MessageEvent) => {
-      // Only show messages from linkGuard (type: 'LINK_BLOCKED')
+      // Only show messages from navigationInterceptor (type: 'LINK_BLOCKED')
       if (
         event.data && 
         typeof event.data === 'object' && 
@@ -220,7 +220,7 @@ function App() {
         <div className="flex flex-col items-center gap-8 p-8">
           <div className="flex flex-col gap-4 max-w-2xl w-full">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold">Link Guard Test</h1>
+              <h1 className="text-2xl font-bold">Navigation Interceptor Test</h1>
               <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
                 Guest Panel
               </span>
@@ -228,9 +228,9 @@ function App() {
             
             {/* Control Settings */}
             <div className="flex flex-col gap-4 p-4 border rounded-lg">
-              <h2 className="text-lg font-semibold">Guard Settings</h2>
+              <h2 className="text-lg font-semibold">Interceptor Settings</h2>
               <p className="text-xs text-muted-foreground">
-                Link guard interceptors are always active. Configure blocking rules below.
+                Navigation interceptors are always active. Configure blocking rules below.
               </p>
               
               {/* Block External Links Group */}
