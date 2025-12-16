@@ -141,136 +141,151 @@ function App() {
                 Link guard interceptors are always active. Configure blocking rules below.
               </p>
               
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={blockExternal}
-                  onChange={(e) => setBlockExternal(e.target.checked)}
-                  className="w-4 h-4"
-                />
-                <span>Block External Links</span>
-              </label>
-              
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={blockInternal}
-                  onChange={(e) => setBlockInternal(e.target.checked)}
-                  className="w-4 h-4"
-                />
-                <span>Block Internal Links</span>
-              </label>
-              
+              {/* Block External Links Group */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Allowed External URL:</label>
-                <input
-                  type="text"
-                  value={allowedExternalUrl}
-                  onChange={(e) => setAllowedExternalUrl(e.target.value)}
-                  placeholder="e.g., https://example.com"
-                  className="px-3 py-2 border rounded-md"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Single external URL that will be allowed even if "Block External Links" is enabled
-                </p>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={blockExternal}
+                    onChange={(e) => setBlockExternal(e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                  <span>Block External Links</span>
+                </label>
+                {blockExternal && (
+                  <div className="ml-6 flex flex-col gap-2">
+                    <label className="text-sm font-medium">Allowed External URL:</label>
+                    <input
+                      type="text"
+                      value={allowedExternalUrl}
+                      onChange={(e) => setAllowedExternalUrl(e.target.value)}
+                      placeholder="e.g., https://example.com"
+                      className="px-3 py-2 border rounded-md"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Single external URL that will be allowed even if "Block External Links" is enabled
+                    </p>
+                  </div>
+                )}
               </div>
               
+              {/* Block Internal Links Group */}
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Allowed SubLocation (hash routing):</label>
-                <input
-                  type="text"
-                  value={allowSubLocation}
-                  onChange={(e) => setAllowSubLocation(e.target.value)}
-                  placeholder="e.g., admin, public"
-                  className="px-3 py-2 border rounded-md"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Only allow links matching #/&lt;sublocation&gt;/... pattern
-                </p>
-              </div>
-            </div>
-
-        {/* Status */}
-        <div className="p-4 bg-muted rounded-lg">
-          <p className="text-sm">
-            Guard Status: <strong>Active</strong> (interceptors always running)
-          </p>
-          <div className="text-sm text-muted-foreground mt-1 space-y-1">
-            {blockExternal && (
-              <p>External links will be blocked {allowedExternalUrl && `(except ${new URL(allowedExternalUrl).hostname})`}</p>
-            )}
-            {blockInternal && <p>Internal links will be blocked</p>}
-            {allowSubLocation && (
-              <p>Only hash routes starting with #/{allowSubLocation}/ will be allowed</p>
-            )}
-            {!blockExternal && !blockInternal && !allowSubLocation && (
-              <p className="text-muted-foreground italic">No blocking rules active - all navigation allowed</p>
-            )}
-          </div>
-        </div>
-
-            {/* shadcn Button as Link Examples */}
-            <div className="flex flex-col gap-4 p-4 border rounded-lg">
-              <h2 className="text-lg font-semibold">shadcn Button (asChild with &lt;a&gt;)</h2>
-              <div className="flex flex-col gap-2">
-                <p className="text-sm font-medium text-muted-foreground">Internal Links:</p>
-                <Button asChild variant="link">
-                  <a href="/internal-page">Internal Link - /internal-page (Button variant="link")</a>
-                </Button>
-                <Button asChild variant="default">
-                  <a href="#/admin/dashboard">Hash Route - #/admin/dashboard (Button variant="default")</a>
-                </Button>
-                <Button asChild variant="outline">
-                  <a href="#/public/home">Hash Route - #/public/home (Button variant="outline")</a>
-                </Button>
-                <p className="text-sm font-medium text-muted-foreground mt-2">External Links:</p>
-                <Button asChild variant="default">
-                  <a href="https://example.com" target="_blank" rel="noopener noreferrer">
-                    External Link - example.com (Button variant="default")
-                  </a>
-                </Button>
-                <Button asChild variant="outline">
-                  <a href="https://google.com" target="_blank" rel="noopener noreferrer">
-                    External Link - google.com (Button variant="outline")
-                  </a>
-                </Button>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={blockInternal}
+                    onChange={(e) => setBlockInternal(e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                  <span>Block Internal Links</span>
+                </label>
+                {blockInternal && (
+                  <div className="ml-6 flex flex-col gap-2">
+                    <label className="text-sm font-medium">Allowed SubLocation (hash routing):</label>
+                    <input
+                      type="text"
+                      value={allowSubLocation}
+                      onChange={(e) => setAllowSubLocation(e.target.value)}
+                      placeholder="e.g., admin, public"
+                      className="px-3 py-2 border rounded-md"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Only allow links matching #/&lt;sublocation&gt;/... pattern
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Native &lt;a&gt; Element Examples */}
             <div className="flex flex-col gap-4 p-4 border rounded-lg">
               <h2 className="text-lg font-semibold">Native &lt;a&gt; Elements</h2>
-              <div className="flex flex-col gap-2">
-                <p className="text-sm font-medium text-muted-foreground">Internal Links:</p>
-                <a href="/another-page" className="text-primary underline hover:no-underline">
-                  Internal Link - /another-page (Native &lt;a&gt;)
-                </a>
-                <a href="#/admin/users" className="text-primary underline hover:no-underline">
-                  Hash Route - #/admin/users (Native &lt;a&gt;)
-                </a>
-                <a href="#/public/about" className="text-primary underline hover:no-underline">
-                  Hash Route - #/public/about (Native &lt;a&gt;)
-                </a>
-                <a href="#/settings" className="text-primary underline hover:no-underline">
-                  Hash Route - #/settings (Native &lt;a&gt;)
-                </a>
-                <p className="text-sm font-medium text-muted-foreground mt-2">External Links:</p>
-                <a 
-                  href="https://github.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-primary underline hover:no-underline"
-                >
-                  External Link - github.com (Native &lt;a&gt;)
-                </a>
-                <a 
-                  href="https://stackoverflow.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-primary underline hover:no-underline"
-                >
-                  External Link - stackoverflow.com (Native &lt;a&gt;)
-                </a>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs font-medium text-muted-foreground">External</p>
+                  <div className="flex flex-wrap gap-2">
+                    <a 
+                      href="https://github.com" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary underline hover:no-underline"
+                    >
+                      github.com
+                    </a>
+                    <a 
+                      href="https://stackoverflow.com" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary underline hover:no-underline"
+                    >
+                      stackoverflow.com
+                    </a>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs font-medium text-muted-foreground">Internal</p>
+                  <div className="flex flex-wrap gap-2">
+                    <a href="/another-page" className="text-primary underline hover:no-underline">
+                      /another-page
+                    </a>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs font-medium text-muted-foreground">Hash</p>
+                  <div className="flex flex-wrap gap-2">
+                    <a href="#/admin/users" className="text-primary underline hover:no-underline">
+                      #/admin/users
+                    </a>
+                    <a href="#/public/about" className="text-primary underline hover:no-underline">
+                      #/public/about
+                    </a>
+                    <a href="#/settings" className="text-primary underline hover:no-underline">
+                      #/settings
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* shadcn Button as Link Examples */}
+            <div className="flex flex-col gap-4 p-4 border rounded-lg">
+              <h2 className="text-lg font-semibold">shadcn Button (asChild with &lt;a&gt;)</h2>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs font-medium text-muted-foreground">External</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild variant="default">
+                      <a href="https://example.com" target="_blank" rel="noopener noreferrer">
+                        example.com
+                      </a>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <a href="https://google.com" target="_blank" rel="noopener noreferrer">
+                        google.com
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs font-medium text-muted-foreground">Internal</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild variant="default">
+                      <a href="/internal-page">/internal-page</a>
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs font-medium text-muted-foreground">Hash</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild variant="default">
+                      <a href="#/admin/dashboard">#/admin/dashboard</a>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <a href="#/public/home">#/public/home</a>
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
 
