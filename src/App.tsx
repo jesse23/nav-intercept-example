@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { linkGuard } from "@/lib/linkGuard"
 
@@ -18,6 +18,7 @@ function App() {
   const [splitPosition, setSplitPosition] = useState(60) // Percentage for native app panel
   const [isDragging, setIsDragging] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // Configure link guard with current options
@@ -65,8 +66,8 @@ function App() {
             data: event.data,
             timestamp: new Date(),
           }
-          // Keep only last 50 messages
-          return [newMessage, ...prev].slice(0, 50)
+          // Keep only last 50 messages (latest at bottom)
+          return [...prev, newMessage].slice(-50)
         })
       }
     }
@@ -77,6 +78,11 @@ function App() {
       window.removeEventListener('message', handleMessage)
     }
   }, [])
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
   useEffect(() => {
     const checkMobile = () => {
@@ -140,14 +146,15 @@ function App() {
         <div className="p-4 border-b bg-muted">
           <h2 className="text-lg font-semibold">Host App Example</h2>
           <div className="mt-3 pt-3 border-t">
-            <ol className="text-xs text-muted-foreground list-decimal list-inside space-y-1">
-              <li>Check "Block External Links" - external links should be blocked</li>
-              <li>Check "Block Internal Links" - internal links should be blocked</li>
-              <li>Enter an allowed external URL - that domain should work even if external blocking is enabled</li>
-              <li>Set "Allowed SubLocation" to "admin" - only #/admin/* links will work, others blocked</li>
-              <li>Test JavaScript APIs (window.open, location.href, history.pushState, etc.) - they should also be blocked</li>
-              <li>Uncheck all blocking options - all navigation should work normally</li>
-            </ol>
+            <p className="text-xs text-muted-foreground mb-3">
+              This is an app to mimic navigation interception for embedded panel.
+            </p>
+            <p className="text-xs font-semibold mb-2">How to use:</p>
+            <ul className="text-xs text-muted-foreground list-disc list-inside space-y-1 ml-2">
+              <li>Check "Block External Links" to block external links</li>
+              <li>Check "Block Internal Links" to block internal links</li>
+              <li>Uncheck all options to allow all navigation</li>
+            </ul>
           </div>
         </div>
         <div className="px-4 pt-4 pb-2 bg-muted/30">
@@ -180,6 +187,7 @@ function App() {
               </div>
             ))
           )}
+          <div ref={messagesEndRef} />
         </div>
         {messages.length > 0 && (
           <div className="p-2 border-t bg-muted/50">
@@ -234,7 +242,7 @@ function App() {
                     onChange={(e) => setBlockExternal(e.target.checked)}
                     className="w-4 h-4"
                   />
-                  <span>Block External Links</span>
+                  <span className="text-sm">Block External Links</span>
                 </label>
                 {blockExternal && (
                   <div className="ml-6 flex flex-col gap-2">
@@ -244,7 +252,7 @@ function App() {
                       value={allowedExternalUrl}
                       onChange={(e) => setAllowedExternalUrl(e.target.value)}
                       placeholder="e.g., https://example.com"
-                      className="px-3 py-2 border rounded-md"
+                      className="text-sm px-3 py-2 border rounded-md"
                     />
                     <p className="text-xs text-muted-foreground">
                       Single external URL that will be allowed even if "Block External Links" is enabled
@@ -262,7 +270,7 @@ function App() {
                     onChange={(e) => setBlockInternal(e.target.checked)}
                     className="w-4 h-4"
                   />
-                  <span>Block Internal Links</span>
+                  <span className="text-sm">Block Internal Links</span>
                 </label>
                 {blockInternal && (
                   <div className="ml-6 flex flex-col gap-2">
@@ -272,7 +280,7 @@ function App() {
                       value={allowSubLocation}
                       onChange={(e) => setAllowSubLocation(e.target.value)}
                       placeholder="e.g., admin, public"
-                      className="px-3 py-2 border rounded-md"
+                      className="text-sm px-3 py-2 border rounded-md"
                     />
                     <p className="text-xs text-muted-foreground">
                       Only allow links matching #/&lt;sublocation&gt;/... pattern
@@ -293,7 +301,7 @@ function App() {
                       href="https://google.com" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-primary underline hover:no-underline"
+                      className="text-sm text-primary underline hover:no-underline"
                     >
                       google.com
                     </a>
@@ -301,7 +309,7 @@ function App() {
                       href="https://bing.com" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-primary underline hover:no-underline"
+                      className="text-sm text-primary underline hover:no-underline"
                     >
                       bing.com
                     </a>
@@ -310,7 +318,7 @@ function App() {
                 <div className="flex flex-col gap-2">
                   <p className="text-xs font-medium text-muted-foreground">Internal</p>
                   <div className="flex flex-wrap gap-2">
-                    <a href="/internal-page" className="text-primary underline hover:no-underline">
+                    <a href="/internal-page" className="text-sm text-primary underline hover:no-underline">
                       /internal-page
                     </a>
                   </div>
@@ -318,10 +326,10 @@ function App() {
                 <div className="flex flex-col gap-2">
                   <p className="text-xs font-medium text-muted-foreground">Hash</p>
                   <div className="flex flex-wrap gap-4">
-                    <a href="#/admin/dashboard" className="text-primary underline hover:no-underline">
+                    <a href="#/admin/dashboard" className="text-sm text-primary underline hover:no-underline">
                       #/admin/dashboard
                     </a>
-                    <a href="#/settings/advanced" className="text-primary underline hover:no-underline">
+                    <a href="#/settings/advanced" className="text-sm text-primary underline hover:no-underline">
                       #/settings/advanced
                     </a>
                   </div>
