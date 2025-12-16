@@ -10,21 +10,41 @@ interface Message {
 }
 
 function App() {
-  const [guardEnabled, setGuardEnabled] = useState(false)
-  const [allowExampleCom, setAllowExampleCom] = useState(false)
+  const [blockExternal, setBlockExternal] = useState(false)
   const [blockInternal, setBlockInternal] = useState(false)
+  const [allowedExternalUrl, setAllowedExternalUrl] = useState("")
   const [allowSubLocation, setAllowSubLocation] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
 
   useEffect(() => {
     // Configure link guard with current options
+    // Guard is always enabled (interceptors are always active), but blocking depends on settings
+    let allowedDomains: string[] | undefined = undefined
+    
+    if (blockExternal) {
+      // If blocking external, set up whitelist
+      if (allowedExternalUrl.trim()) {
+        try {
+          const url = new URL(allowedExternalUrl)
+          allowedDomains = [url.hostname]
+        } catch {
+          // Invalid URL, block all external
+          allowedDomains = []
+        }
+      } else {
+        // Block all external (empty whitelist)
+        allowedDomains = []
+      }
+    }
+    // If not blocking external, allowedDomains stays undefined (allow all)
+    
     linkGuard.configure({
-      enabled: guardEnabled,
-      allowedDomains: allowExampleCom ? ["example.com"] : undefined,
+      enabled: true, // Interceptors are always active
+      allowedDomains,
       allowInternal: blockInternal ? false : undefined,
-      allowSubLocation: allowSubLocation || undefined,
+      allowSubLocation: allowSubLocation.trim() || undefined,
     })
-  }, [guardEnabled, allowExampleCom, blockInternal, allowSubLocation])
+  }, [blockExternal, blockInternal, allowedExternalUrl, allowSubLocation])
 
   useEffect(() => {
     // Listen for postMessage events (mimicking native app)
@@ -114,47 +134,55 @@ function App() {
               </span>
             </div>
             
-            {/* Control Checkboxes */}
+            {/* Control Settings */}
             <div className="flex flex-col gap-4 p-4 border rounded-lg">
               <h2 className="text-lg font-semibold">Guard Settings</h2>
+              <p className="text-xs text-muted-foreground">
+                Link guard interceptors are always active. Configure blocking rules below.
+              </p>
+              
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={guardEnabled}
-                  onChange={(e) => setGuardEnabled(e.target.checked)}
+                  checked={blockExternal}
+                  onChange={(e) => setBlockExternal(e.target.checked)}
                   className="w-4 h-4"
                 />
-                <span>Enable Link Guard</span>
+                <span>Block External Links</span>
               </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={allowExampleCom}
-                  onChange={(e) => setAllowExampleCom(e.target.checked)}
-                  className="w-4 h-4"
-                  disabled={!guardEnabled}
-                />
-                <span>Allow example.com (whitelist domain)</span>
-              </label>
+              
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={blockInternal}
                   onChange={(e) => setBlockInternal(e.target.checked)}
                   className="w-4 h-4"
-                  disabled={!guardEnabled}
                 />
                 <span>Block Internal Links</span>
               </label>
+              
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Allow SubLocation (hash routing):</label>
+                <label className="text-sm font-medium">Allowed External URL:</label>
+                <input
+                  type="text"
+                  value={allowedExternalUrl}
+                  onChange={(e) => setAllowedExternalUrl(e.target.value)}
+                  placeholder="e.g., https://example.com"
+                  className="px-3 py-2 border rounded-md"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Single external URL that will be allowed even if "Block External Links" is enabled
+                </p>
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">Allowed SubLocation (hash routing):</label>
                 <input
                   type="text"
                   value={allowSubLocation}
                   onChange={(e) => setAllowSubLocation(e.target.value)}
                   placeholder="e.g., admin, public"
-                  disabled={!guardEnabled}
-                  className="px-3 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-2 border rounded-md"
                 />
                 <p className="text-xs text-muted-foreground">
                   Only allow links matching #/&lt;sublocation&gt;/... pattern
@@ -162,21 +190,24 @@ function App() {
               </div>
             </div>
 
-            {/* Status */}
-            <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm">
-                Guard Status: <strong>{guardEnabled ? "Enabled" : "Disabled"}</strong>
-              </p>
-              {guardEnabled && (
-                <div className="text-sm text-muted-foreground mt-1 space-y-1">
-                  <p>External links will be blocked {allowExampleCom && "(except example.com)"}</p>
-                  {blockInternal && <p>Internal links will be blocked</p>}
-                  {allowSubLocation && (
-                    <p>Only hash routes starting with #/{allowSubLocation}/ will be allowed</p>
-                  )}
-                </div>
-              )}
-            </div>
+        {/* Status */}
+        <div className="p-4 bg-muted rounded-lg">
+          <p className="text-sm">
+            Guard Status: <strong>Active</strong> (interceptors always running)
+          </p>
+          <div className="text-sm text-muted-foreground mt-1 space-y-1">
+            {blockExternal && (
+              <p>External links will be blocked {allowedExternalUrl && `(except ${new URL(allowedExternalUrl).hostname})`}</p>
+            )}
+            {blockInternal && <p>Internal links will be blocked</p>}
+            {allowSubLocation && (
+              <p>Only hash routes starting with #/{allowSubLocation}/ will be allowed</p>
+            )}
+            {!blockExternal && !blockInternal && !allowSubLocation && (
+              <p className="text-muted-foreground italic">No blocking rules active - all navigation allowed</p>
+            )}
+          </div>
+        </div>
 
             {/* shadcn Button as Link Examples */}
             <div className="flex flex-col gap-4 p-4 border rounded-lg">
@@ -246,194 +277,206 @@ function App() {
             {/* JavaScript API Navigation Examples */}
             <div className="flex flex-col gap-4 p-4 border rounded-lg">
               <h2 className="text-lg font-semibold">JavaScript API Navigation</h2>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-4">
                 <p className="text-sm font-medium text-muted-foreground">Test JavaScript navigation methods:</p>
-                <p className="text-xs text-muted-foreground">
-                  Note: <code>window.location</code> methods are intercepted via <code>beforeunload</code> event, which shows a browser confirmation dialog to block navigation. 
-                  <code>window.open()</code>, <code>history.pushState()</code>, <code>history.replaceState()</code>, and click events are directly intercepted.
-                </p>
                 
-                <div className="space-y-4">
-                  {/* window.open() */}
-                  <div className="flex flex-col gap-2">
-                    <p className="text-xs font-medium text-muted-foreground">window.open()</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        onClick={() => window.open('https://google.com', '_blank')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        External
-                      </Button>
-                      <Button
-                        onClick={() => window.open('/test-page', '_self')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        Internal
-                      </Button>
-                      <Button
-                        onClick={() => window.open('#/admin/test', '_self')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        Hash
-                      </Button>
+                {/* Directly intercepted APIs */}
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    <code>window.open()</code>, <code>history.pushState()</code>, <code>history.replaceState()</code>, and click events are directly intercepted.
+                  </p>
+                  
+                  <div className="space-y-4">
+                    {/* window.open() */}
+                    <div className="flex flex-col gap-2">
+                      <p className="text-xs font-medium text-muted-foreground">window.open()</p>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          onClick={() => window.open('https://google.com', '_blank')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          External
+                        </Button>
+                        <Button
+                          onClick={() => window.open('/test-page', '_self')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          Internal
+                        </Button>
+                        <Button
+                          onClick={() => window.open('#/admin/test', '_self')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          Hash
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* history.pushState() */}
+                    <div className="flex flex-col gap-2">
+                      <p className="text-xs font-medium text-muted-foreground">history.pushState()</p>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          onClick={() => history.pushState({}, '', 'https://google.com')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          External
+                        </Button>
+                        <Button
+                          onClick={() => history.pushState({}, '', '/test-push')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          Internal
+                        </Button>
+                        <Button
+                          onClick={() => history.pushState({}, '', '#/admin/push')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          Hash
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* history.replaceState() */}
+                    <div className="flex flex-col gap-2">
+                      <p className="text-xs font-medium text-muted-foreground">history.replaceState()</p>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          onClick={() => history.replaceState({}, '', 'https://github.com')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          External
+                        </Button>
+                        <Button
+                          onClick={() => history.replaceState({}, '', '/test-replace')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          Internal
+                        </Button>
+                        <Button
+                          onClick={() => history.replaceState({}, '', '#/public/replace')}
+                          variant="outline"
+                          size="sm"
+                        >
+                          Hash
+                        </Button>
+                      </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* location.href */}
-                  <div className="flex flex-col gap-2">
-                    <p className="text-xs font-medium text-muted-foreground">location.href</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        onClick={() => {
-                          (window.location as any).href = 'https://github.com'
-                        }}
-                        variant="outline"
-                        size="sm"
-                        title="Intercepted via beforeunload event"
-                      >
-                        External
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          (window.location as any).href = '/test-page'
-                        }}
-                        variant="outline"
-                        size="sm"
-                        title="Intercepted via beforeunload event"
-                      >
-                        Internal
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          (window.location as any).href = '#/public/test'
-                        }}
-                        variant="outline"
-                        size="sm"
-                        title="Intercepted via hashchange event"
-                      >
-                        Hash
-                      </Button>
+                {/* Location methods intercepted via beforeunload */}
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    <code>window.location</code> methods are intercepted via <code>beforeunload</code> event, which shows a browser confirmation dialog to block navigation.
+                  </p>
+                  
+                  <div className="space-y-4">
+                    {/* location.href */}
+                    <div className="flex flex-col gap-2">
+                      <p className="text-xs font-medium text-muted-foreground">location.href</p>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          onClick={() => {
+                            (window.location as any).href = 'https://github.com'
+                          }}
+                          variant="outline"
+                          size="sm"
+                          title="Intercepted via beforeunload event"
+                        >
+                          External
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            (window.location as any).href = '/test-page'
+                          }}
+                          variant="outline"
+                          size="sm"
+                          title="Intercepted via beforeunload event"
+                        >
+                          Internal
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            (window.location as any).href = '#/public/test'
+                          }}
+                          variant="outline"
+                          size="sm"
+                          title="Intercepted via hashchange event"
+                        >
+                          Hash
+                        </Button>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* location.replace() */}
-                  <div className="flex flex-col gap-2">
-                    <p className="text-xs font-medium text-muted-foreground">location.replace()</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        onClick={() => window.location.replace('https://stackoverflow.com')}
-                        variant="outline"
-                        size="sm"
-                        title="Intercepted via beforeunload event"
-                      >
-                        External
-                      </Button>
-                      <Button
-                        onClick={() => window.location.replace('/another-internal')}
-                        variant="outline"
-                        size="sm"
-                        title="Intercepted via beforeunload event"
-                      >
-                        Internal
-                      </Button>
-                      <Button
-                        onClick={() => window.location.replace('#/public/test')}
-                        variant="outline"
-                        size="sm"
-                        title="Intercepted via hashchange event"
-                      >
-                        Hash
-                      </Button>
+                    {/* location.replace() */}
+                    <div className="flex flex-col gap-2">
+                      <p className="text-xs font-medium text-muted-foreground">location.replace()</p>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          onClick={() => window.location.replace('https://stackoverflow.com')}
+                          variant="outline"
+                          size="sm"
+                          title="Intercepted via beforeunload event"
+                        >
+                          External
+                        </Button>
+                        <Button
+                          onClick={() => window.location.replace('/another-internal')}
+                          variant="outline"
+                          size="sm"
+                          title="Intercepted via beforeunload event"
+                        >
+                          Internal
+                        </Button>
+                        <Button
+                          onClick={() => window.location.replace('#/public/test')}
+                          variant="outline"
+                          size="sm"
+                          title="Intercepted via hashchange event"
+                        >
+                          Hash
+                        </Button>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* location.assign() */}
-                  <div className="flex flex-col gap-2">
-                    <p className="text-xs font-medium text-muted-foreground">location.assign()</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        onClick={() => window.location.assign('https://example.com')}
-                        variant="outline"
-                        size="sm"
-                        title="Intercepted via beforeunload event"
-                      >
-                        External
-                      </Button>
-                      <Button
-                        onClick={() => window.location.assign('/another-internal')}
-                        variant="outline"
-                        size="sm"
-                        title="Intercepted via beforeunload event"
-                      >
-                        Internal
-                      </Button>
-                      <Button
-                        onClick={() => window.location.assign('#/admin/assign')}
-                        variant="outline"
-                        size="sm"
-                        title="Intercepted via hashchange event"
-                      >
-                        Hash
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* history.pushState() */}
-                  <div className="flex flex-col gap-2">
-                    <p className="text-xs font-medium text-muted-foreground">history.pushState()</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        onClick={() => history.pushState({}, '', 'https://google.com')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        External
-                      </Button>
-                      <Button
-                        onClick={() => history.pushState({}, '', '/test-push')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        Internal
-                      </Button>
-                      <Button
-                        onClick={() => history.pushState({}, '', '#/admin/push')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        Hash
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* history.replaceState() */}
-                  <div className="flex flex-col gap-2">
-                    <p className="text-xs font-medium text-muted-foreground">history.replaceState()</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        onClick={() => history.replaceState({}, '', 'https://github.com')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        External
-                      </Button>
-                      <Button
-                        onClick={() => history.replaceState({}, '', '/test-replace')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        Internal
-                      </Button>
-                      <Button
-                        onClick={() => history.replaceState({}, '', '#/public/replace')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        Hash
-                      </Button>
+                    {/* location.assign() */}
+                    <div className="flex flex-col gap-2">
+                      <p className="text-xs font-medium text-muted-foreground">location.assign()</p>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          onClick={() => window.location.assign('https://example.com')}
+                          variant="outline"
+                          size="sm"
+                          title="Intercepted via beforeunload event"
+                        >
+                          External
+                        </Button>
+                        <Button
+                          onClick={() => window.location.assign('/another-internal')}
+                          variant="outline"
+                          size="sm"
+                          title="Intercepted via beforeunload event"
+                        >
+                          Internal
+                        </Button>
+                        <Button
+                          onClick={() => window.location.assign('#/admin/assign')}
+                          variant="outline"
+                          size="sm"
+                          title="Intercepted via hashchange event"
+                        >
+                          Hash
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>

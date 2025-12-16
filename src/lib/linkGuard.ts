@@ -70,13 +70,16 @@ const shouldBlockUrl = (urlString: string): { blocked: boolean; url?: URL; reaso
 
     // Check external links
     if (isExternal) {
-      if (
-        state.allowedDomains &&
-        state.allowedDomains.includes(url.hostname)
-      ) {
-        return { blocked: false }
+      // If allowedDomains is set (even if empty array), check whitelist
+      if (state.allowedDomains !== undefined) {
+        if (state.allowedDomains.length > 0 && state.allowedDomains.includes(url.hostname)) {
+          return { blocked: false }
+        }
+        // If whitelist exists but domain not in it (or whitelist is empty), block
+        return { blocked: true, url, reason: 'external_link' }
       }
-      return { blocked: true, url, reason: 'external_link' }
+      // If allowedDomains is undefined, don't block external links (default: allow all external)
+      return { blocked: false }
     }
 
     // Check internal links
