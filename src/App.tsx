@@ -215,17 +215,16 @@ function App() {
         <div className="flex flex-col items-center gap-8 p-8">
           <div className="flex flex-col gap-4 max-w-2xl w-full">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold">Navigation Interceptor Test</h1>
+              <h1 className="text-2xl font-bold">Navigation Interceptor</h1>
               <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
                 Guest Panel
               </span>
             </div>
             
             {/* Control Settings */}
-            <div className="flex flex-col gap-4 p-4 border rounded-lg">
-              <h2 className="text-lg font-semibold">Interceptor Settings</h2>
+            <div className="flex flex-col gap-4">
               <p className="text-xs text-muted-foreground">
-                Navigation interceptors are always active. Configure blocking rules below.
+                Use options below to configure the navigation behavior
               </p>
               
               {/* Block External Links Group */}
@@ -536,37 +535,6 @@ function App() {
                       </div>
                     </div>
 
-                    {/* location.replace() */}
-                    <div className="flex flex-col gap-2">
-                      <p className="text-xs font-medium text-muted-foreground">location.replace()</p>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          onClick={() => window.location.replace('https://google.com')}
-                          variant="outline"
-                          size="sm"
-                          title="https://google.com"
-                        >
-                          External
-                        </Button>
-                        <Button
-                          onClick={() => window.location.replace('/internal-page')}
-                          variant="outline"
-                          size="sm"
-                          title="/internal-page"
-                        >
-                          Internal
-                        </Button>
-                        <Button
-                          onClick={() => window.location.replace('#/admin/dashboard')}
-                          variant="outline"
-                          size="sm"
-                          title="#/admin/dashboard"
-                        >
-                          Hash
-                        </Button>
-                      </div>
-                    </div>
-
                     {/* location.assign() */}
                     <div className="flex flex-col gap-2">
                       <p className="text-xs font-medium text-muted-foreground">location.assign()</p>
@@ -589,6 +557,37 @@ function App() {
                         </Button>
                         <Button
                           onClick={() => window.location.assign('#/admin/dashboard')}
+                          variant="outline"
+                          size="sm"
+                          title="#/admin/dashboard"
+                        >
+                          Hash
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* location.replace() */}
+                    <div className="flex flex-col gap-2">
+                      <p className="text-xs font-medium text-muted-foreground">location.replace()</p>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          onClick={() => window.location.replace('https://google.com')}
+                          variant="outline"
+                          size="sm"
+                          title="https://google.com"
+                        >
+                          External
+                        </Button>
+                        <Button
+                          onClick={() => window.location.replace('/internal-page')}
+                          variant="outline"
+                          size="sm"
+                          title="/internal-page"
+                        >
+                          Internal
+                        </Button>
+                        <Button
+                          onClick={() => window.location.replace('#/admin/dashboard')}
                           variant="outline"
                           size="sm"
                           title="#/admin/dashboard"
