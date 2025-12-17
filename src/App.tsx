@@ -480,7 +480,7 @@ function App() {
                 {/* Location methods intercepted via beforeunload */}
                 <div className="flex flex-col gap-2">
                   <p className="text-xs text-muted-foreground">
-                    <code>window.location</code> methods are intercepted via <code>beforeunload</code> event, which shows a browser confirmation dialog to block navigation.
+                    <code>window.location</code> methods trigger <code>beforeunload</code> events, but the destination URL (href) cannot be captured due to browser security restrictions.
                   </p>
                   
                   <div className="space-y-4">
