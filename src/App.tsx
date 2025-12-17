@@ -14,6 +14,7 @@ function App() {
   const [blockInternal, setBlockInternal] = useState(false)
   const [allowedExternalUrl, setAllowedExternalUrl] = useState("")
   const [allowSubLocation, setAllowSubLocation] = useState("")
+  const [blockLocationAPI, setBlockLocationAPI] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [splitPosition, setSplitPosition] = useState(60) // Percentage for native app panel
   const [isDragging, setIsDragging] = useState(false)
@@ -47,6 +48,7 @@ function App() {
       allowedDomains,
       allowInternal: blockInternal ? false : undefined,
       allowSubLocation: allowSubLocation.trim() || undefined,
+      blockLocationAPI: blockLocationAPI || undefined,
       onBlocked: (info) => {
         // Update messages state
         setMessages((prev) => {
@@ -70,7 +72,7 @@ function App() {
         )
       },
     })
-  }, [blockExternal, blockInternal, allowedExternalUrl, allowSubLocation])
+  }, [blockExternal, blockInternal, allowedExternalUrl, allowSubLocation, blockLocationAPI])
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -281,6 +283,19 @@ function App() {
                   </div>
                 )}
               </div>
+              
+              {/* Block Location API Group */}
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={blockLocationAPI}
+                    onChange={(e) => setBlockLocationAPI(e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">Block Location API</span>
+                </label>
+              </div>
             </div>
 
             {/* Native &lt;a&gt; Element Examples */}
@@ -480,7 +495,7 @@ function App() {
                 {/* Location methods intercepted via beforeunload */}
                 <div className="flex flex-col gap-2">
                   <p className="text-xs text-muted-foreground">
-                    <code>window.location</code> methods trigger <code>beforeunload</code> events, but the destination URL (href) cannot be captured due to browser security restrictions.
+                    Location API can only be blocked via leave confirmation, without access to the new URL. Use the 3rd option above to block it.
                   </p>
                   
                   <div className="space-y-4">

@@ -13,6 +13,7 @@ interface NavigationInterceptorOptions {
   allowedDomains?: string[]
   allowInternal?: boolean
   allowSubLocation?: string
+  blockLocationAPI?: boolean // If true, block all location API navigation (location.href, location.assign, location.replace)
   onBlocked?: OnBlockedCallback
 }
 
@@ -22,6 +23,7 @@ interface NavigationInterceptorState {
   allowedDomains?: string[]
   allowInternal?: boolean
   allowSubLocation?: string
+  blockLocationAPI?: boolean
   onBlocked?: OnBlockedCallback
 }
 
@@ -224,21 +226,18 @@ const hashChangeHandler = (_e: HashChangeEvent) => {
 const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
   if (!state.enabled) return
 
-  const currentLocation = window.location.href
-  
-  // Check if this navigation should be blocked
-  const checkResult = shouldBlockUrl(currentLocation)
-  
-  if (checkResult.blocked && checkResult.url) {
-    // Notify about the blocked navigation attempt
-    notifyBlocked(checkResult.url, 'location.href')
-    
-    // Best practice: preventDefault() + set returnValue for legacy support
+  // Only block if user explicitly enabled blockLocationAPI option
+  // Note: We cannot determine the destination URL in beforeunload (currentLocation is the old URL, not new)
+  // So we can only block all location API navigation or allow all
+  if (state.blockLocationAPI === true) {
+    // Block all location API navigation (location.href, location.assign, location.replace)
     // Note: The browser will show its own generic message - we cannot customize it
     // See: https://developer.mozilla.org/en-US/docs/Web/API/BeforeUnloadEvent/returnValue
     e.preventDefault()
     e.returnValue = '' // Any truthy value works, but message is ignored by browsers
   }
+  
+  // If blockLocationAPI is false or undefined, allow all location API navigation
 }
 
 // Intercepted window.open - checks state before blocking
@@ -313,6 +312,7 @@ export const navigationInterceptor = {
     state.allowedDomains = options.allowedDomains
     state.allowInternal = options.allowInternal
     state.allowSubLocation = options.allowSubLocation
+    state.blockLocationAPI = options.blockLocationAPI
     state.onBlocked = options.onBlocked
   },
 
@@ -346,6 +346,7 @@ export const navigationInterceptor = {
     state.allowedDomains = undefined
     state.allowInternal = undefined
     state.allowSubLocation = undefined
+    state.blockLocationAPI = undefined
     state.onBlocked = undefined
   },
 }
