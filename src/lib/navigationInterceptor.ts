@@ -17,15 +17,7 @@ interface NavigationInterceptorOptions {
   onBlocked?: OnBlockedCallback
 }
 
-interface NavigationInterceptorState {
-  enabled: boolean
-  allowExternal?: boolean
-  allowedDomains?: string[]
-  allowInternal?: boolean
-  allowSubLocation?: string
-  blockLocationAPI?: boolean
-  onBlocked?: OnBlockedCallback
-}
+type NavigationInterceptorState = NavigationInterceptorOptions
 
 // Singleton state
 const state: NavigationInterceptorState = {
@@ -39,6 +31,32 @@ const originals = {
   replaceState: history.replaceState.bind(history),
 }
 
+// Helper function to extract hash path from URL string
+const extractHashPath = (urlString: string): string | null => {
+  if (urlString.startsWith('#')) {
+    return urlString.slice(1) // Remove leading #
+  }
+  try {
+    const url = new URL(urlString, window.location.href)
+    const hash = url.hash.startsWith('#') ? url.hash.slice(1) : url.hash
+    return hash || null
+  } catch {
+    return null
+  }
+}
+
+// Helper function to check if hash path matches allowed sublocation
+const matchesSubLocation = (hashPath: string | null, allowedSubLocation: string): boolean => {
+  if (!hashPath || !allowedSubLocation) return false
+  
+  const expectedPrefix = `/${allowedSubLocation}`
+  return (
+    hashPath.startsWith(expectedPrefix + '/') || 
+    hashPath === expectedPrefix ||
+    hashPath.startsWith(expectedPrefix + '?')
+  )
+}
+
 // Helper function to check if a URL should be blocked
 const shouldBlockUrl = (urlString: string): { blocked: boolean; url?: URL; reason?: string } => {
   // If interceptor is disabled, don't block anything
@@ -49,19 +67,13 @@ const shouldBlockUrl = (urlString: string): { blocked: boolean; url?: URL; reaso
   // Handle hash-only URLs (pattern: #/<subLocation>/...)
   if (urlString.startsWith('#')) {
     // Hash-only link is always internal
-    const hashPath = urlString.slice(1) // Remove leading #
+    const hashPath = extractHashPath(urlString)
     const url = new URL(window.location.href)
     url.hash = urlString
     
     // Check sublocation filter FIRST (takes precedence over internal blocking)
     if (state.allowSubLocation && hashPath) {
-      const expectedPrefix = `/${state.allowSubLocation}`
-      const startsWithSubLocation = 
-        hashPath.startsWith(expectedPrefix + '/') || 
-        hashPath === expectedPrefix ||
-        hashPath.startsWith(expectedPrefix + '?')
-      
-      if (startsWithSubLocation) {
+      if (matchesSubLocation(hashPath, state.allowSubLocation)) {
         // Matches allowed sublocation, allow it even if internal links are blocked
         return { blocked: false }
       } else {
@@ -81,7 +93,7 @@ const shouldBlockUrl = (urlString: string): { blocked: boolean; url?: URL; reaso
   try {
     const url = new URL(urlString, window.location.href)
     const isExternal = url.origin !== window.location.origin
-    const hashPath = url.hash.startsWith('#') ? url.hash.slice(1) : url.hash
+    const hashPath = extractHashPath(urlString)
 
     // Check external links
     if (isExternal) {
@@ -99,13 +111,7 @@ const shouldBlockUrl = (urlString: string): { blocked: boolean; url?: URL; reaso
 
     // Check sublocation filter FIRST for hash-based routing (takes precedence over internal blocking)
     if (state.allowSubLocation && hashPath) {
-      const expectedPrefix = `/${state.allowSubLocation}`
-      const startsWithSubLocation = 
-        hashPath.startsWith(expectedPrefix + '/') || 
-        hashPath === expectedPrefix ||
-        hashPath.startsWith(expectedPrefix + '?')
-      
-      if (startsWithSubLocation) {
+      if (matchesSubLocation(hashPath, state.allowSubLocation)) {
         // Matches allowed sublocation, allow it even if internal links are blocked
         return { blocked: false }
       } else {
@@ -253,45 +259,37 @@ const interceptedWindowOpen = function(url?: string | URL, target?: string, feat
   return originals.windowOpen.call(window, url, target, features)
 }
 
-// Intercepted history.pushState - checks state before blocking
-const interceptedPushState = function(state: any, title: string, url?: string | URL | null) {
-  if (url) {
-    const urlString = typeof url === 'string' ? url : url.href
-    // For pushState, we need to construct the full URL if it's relative
-    let fullUrl: string
-    try {
-      fullUrl = new URL(urlString, window.location.href).href
-    } catch {
-      fullUrl = window.location.href
-    }
-    const checkResult = shouldBlockUrl(fullUrl)
-    if (checkResult.blocked && checkResult.url) {
-      notifyBlocked(checkResult.url, 'history.pushState')
-      return
-    }
+// Helper function to convert URL parameter to full URL string
+const getFullUrlString = (url: string | URL | null | undefined): string => {
+  if (!url) return window.location.href
+  const urlString = typeof url === 'string' ? url : url.href
+  try {
+    return new URL(urlString, window.location.href).href
+  } catch {
+    return window.location.href
   }
-  return originals.pushState(state, title, url)
 }
 
-// Intercepted history.replaceState - checks state before blocking
-const interceptedReplaceState = function(state: any, title: string, url?: string | URL | null) {
-  if (url) {
-    const urlString = typeof url === 'string' ? url : url.href
-    // For replaceState, we need to construct the full URL if it's relative
-    let fullUrl: string
-    try {
-      fullUrl = new URL(urlString, window.location.href).href
-    } catch {
-      fullUrl = window.location.href
+// Factory function to create history state interceptors
+const createHistoryInterceptor = (originalMethod: typeof history.pushState, source: string) => {
+  return function(state: any, title: string, url?: string | URL | null) {
+    if (url) {
+      const fullUrl = getFullUrlString(url)
+      const checkResult = shouldBlockUrl(fullUrl)
+      if (checkResult.blocked && checkResult.url) {
+        notifyBlocked(checkResult.url, source)
+        return
+      }
     }
-    const checkResult = shouldBlockUrl(fullUrl)
-    if (checkResult.blocked && checkResult.url) {
-      notifyBlocked(checkResult.url, 'history.replaceState')
-      return
-    }
+    return originalMethod.call(history, state, title, url)
   }
-  return originals.replaceState(state, title, url)
 }
+
+// Intercepted history.pushState - checks state before blocking
+const interceptedPushState = createHistoryInterceptor(originals.pushState, 'history.pushState')
+
+// Intercepted history.replaceState - checks state before blocking
+const interceptedReplaceState = createHistoryInterceptor(originals.replaceState, 'history.replaceState')
 
 // Set up interceptors immediately when module loads (before other libraries can cache window methods)
 window.open = interceptedWindowOpen

@@ -9,6 +9,67 @@ interface Message {
   timestamp: Date
 }
 
+// Navigation test URLs
+const TEST_URLS = {
+  external: 'https://google.com',
+  internal: '/internal-page',
+  hash: '#/admin/dashboard',
+} as const
+
+// Helper component for navigation test buttons
+interface NavButtonGroupProps {
+  label: string
+  onClick: (url: string) => void
+  urls?: typeof TEST_URLS
+}
+
+const NavButtonGroup = ({ label, onClick, urls = TEST_URLS }: NavButtonGroupProps) => (
+  <div className="flex flex-col gap-2">
+    <p className="text-xs font-medium text-muted-foreground">{label}</p>
+    <div className="flex flex-wrap gap-2">
+      <Button
+        onClick={() => onClick(urls.external)}
+        variant="outline"
+        size="sm"
+        title={urls.external}
+      >
+        External
+      </Button>
+      <Button
+        onClick={() => onClick(urls.internal)}
+        variant="outline"
+        size="sm"
+        title={urls.internal}
+      >
+        Internal
+      </Button>
+      <Button
+        onClick={() => onClick(urls.hash)}
+        variant="outline"
+        size="sm"
+        title={urls.hash}
+      >
+        Hash
+      </Button>
+    </div>
+  </div>
+)
+
+// Helper function to compute allowedDomains from UI state
+const computeAllowedDomains = (blockExternal: boolean, allowedExternalUrl: string): string[] | undefined => {
+  if (!blockExternal) return undefined
+  
+  if (allowedExternalUrl.trim()) {
+    try {
+      const url = new URL(allowedExternalUrl)
+      return [url.hostname]
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
 function App() {
   const [blockExternal, setBlockExternal] = useState(false)
   const [blockInternal, setBlockInternal] = useState(false)
@@ -24,24 +85,7 @@ function App() {
   useEffect(() => {
     // Configure navigation interceptor with current options
     // Interceptor is always enabled (interceptors are always active), but blocking depends on settings
-    let allowedDomains: string[] | undefined = undefined
-    
-    if (blockExternal) {
-      // If blocking external, set up whitelist
-      if (allowedExternalUrl.trim()) {
-        try {
-          const url = new URL(allowedExternalUrl)
-          allowedDomains = [url.hostname]
-        } catch {
-          // Invalid URL, block all external
-          allowedDomains = []
-        }
-      } else {
-        // Block all external (empty whitelist)
-        allowedDomains = []
-      }
-    }
-    // If not blocking external, allowedDomains stays undefined (allow all)
+    const allowedDomains = computeAllowedDomains(blockExternal, allowedExternalUrl)
     
     navigationInterceptor.configure({
       enabled: true, // Interceptors are always active
@@ -139,7 +183,12 @@ function App() {
         style={{ width: `${splitPosition}%` }}
       >
         <div className="p-4 border-b bg-muted">
-          <h2 className="text-lg font-semibold">Host App Example</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Host App Example</h2>
+            <span className="text-xs text-muted-foreground bg-muted/60 px-2 py-1 rounded border">
+              Host App
+            </span>
+          </div>
           <div className="mt-3 pt-3 border-t">
             <p className="text-xs text-muted-foreground mb-3">
               This is an app to mimic navigation interception for embedded panel.
@@ -212,11 +261,11 @@ function App() {
           flexShrink: isMobile ? undefined : 0
         }}
       >
-        <div className="flex flex-col items-center gap-8 p-8">
+        <div className="flex flex-col items-center gap-8 p-4">
           <div className="flex flex-col gap-4 max-w-2xl w-full">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold">Navigation Interceptor</h1>
-              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+              <h1 className="text-lg font-semibold">Navigation Interceptor</h1>
+              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded border">
                 Guest Panel
               </span>
             </div>
@@ -396,98 +445,18 @@ function App() {
                   </p>
                   
                   <div className="space-y-4">
-                    {/* window.open() */}
-                    <div className="flex flex-col gap-2">
-                      <p className="text-xs font-medium text-muted-foreground">window.open()</p>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          onClick={() => window.open('https://google.com', '_blank')}
-                          variant="outline"
-                          size="sm"
-                          title="https://google.com"
-                        >
-                          External
-                        </Button>
-                        <Button
-                          onClick={() => window.open('/internal-page', '_self')}
-                          variant="outline"
-                          size="sm"
-                          title="/internal-page"
-                        >
-                          Internal
-                        </Button>
-                        <Button
-                          onClick={() => window.open('#/admin/dashboard', '_self')}
-                          variant="outline"
-                          size="sm"
-                          title="#/admin/dashboard"
-                        >
-                          Hash
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* history.pushState() */}
-                    <div className="flex flex-col gap-2">
-                      <p className="text-xs font-medium text-muted-foreground">history.pushState()</p>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          onClick={() => history.pushState({}, '', 'https://google.com')}
-                          variant="outline"
-                          size="sm"
-                          title="https://google.com"
-                        >
-                          External
-                        </Button>
-                        <Button
-                          onClick={() => history.pushState({}, '', '/internal-page')}
-                          variant="outline"
-                          size="sm"
-                          title="/internal-page"
-                        >
-                          Internal
-                        </Button>
-                        <Button
-                          onClick={() => history.pushState({}, '', '#/admin/dashboard')}
-                          variant="outline"
-                          size="sm"
-                          title="#/admin/dashboard"
-                        >
-                          Hash
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* history.replaceState() */}
-                    <div className="flex flex-col gap-2">
-                      <p className="text-xs font-medium text-muted-foreground">history.replaceState()</p>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          onClick={() => history.replaceState({}, '', 'https://google.com')}
-                          variant="outline"
-                          size="sm"
-                          title="https://google.com"
-                        >
-                          External
-                        </Button>
-                        <Button
-                          onClick={() => history.replaceState({}, '', '/internal-page')}
-                          variant="outline"
-                          size="sm"
-                          title="/internal-page"
-                        >
-                          Internal
-                        </Button>
-                        <Button
-                          onClick={() => history.replaceState({}, '', '#/admin/dashboard')}
-                          variant="outline"
-                          size="sm"
-                          title="#/admin/dashboard"
-                        >
-                          Hash
-                        </Button>
-                      </div>
-                    </div>
+                    <NavButtonGroup
+                      label="window.open()"
+                      onClick={(url) => window.open(url, url.startsWith('#') ? '_self' : '_blank')}
+                    />
+                    <NavButtonGroup
+                      label="history.pushState()"
+                      onClick={(url) => history.pushState({}, '', url)}
+                    />
+                    <NavButtonGroup
+                      label="history.replaceState()"
+                      onClick={(url) => history.replaceState({}, '', url)}
+                    />
                   </div>
                 </div>
 
@@ -498,104 +467,20 @@ function App() {
                   </p>
                   
                   <div className="space-y-4">
-                    {/* location.href */}
-                    <div className="flex flex-col gap-2">
-                      <p className="text-xs font-medium text-muted-foreground">location.href</p>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          onClick={() => {
-                            (window.location as any).href = 'https://google.com'
-                          }}
-                          variant="outline"
-                          size="sm"
-                          title="https://google.com"
-                        >
-                          External
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            (window.location as any).href = '/internal-page'
-                          }}
-                          variant="outline"
-                          size="sm"
-                          title="/internal-page"
-                        >
-                          Internal
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            (window.location as any).href = '#/admin/dashboard'
-                          }}
-                          variant="outline"
-                          size="sm"
-                          title="#/admin/dashboard"
-                        >
-                          Hash
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* location.assign() */}
-                    <div className="flex flex-col gap-2">
-                      <p className="text-xs font-medium text-muted-foreground">location.assign()</p>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          onClick={() => window.location.assign('https://google.com')}
-                          variant="outline"
-                          size="sm"
-                          title="https://google.com"
-                        >
-                          External
-                        </Button>
-                        <Button
-                          onClick={() => window.location.assign('/internal-page')}
-                          variant="outline"
-                          size="sm"
-                          title="/internal-page"
-                        >
-                          Internal
-                        </Button>
-                        <Button
-                          onClick={() => window.location.assign('#/admin/dashboard')}
-                          variant="outline"
-                          size="sm"
-                          title="#/admin/dashboard"
-                        >
-                          Hash
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* location.replace() */}
-                    <div className="flex flex-col gap-2">
-                      <p className="text-xs font-medium text-muted-foreground">location.replace()</p>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          onClick={() => window.location.replace('https://google.com')}
-                          variant="outline"
-                          size="sm"
-                          title="https://google.com"
-                        >
-                          External
-                        </Button>
-                        <Button
-                          onClick={() => window.location.replace('/internal-page')}
-                          variant="outline"
-                          size="sm"
-                          title="/internal-page"
-                        >
-                          Internal
-                        </Button>
-                        <Button
-                          onClick={() => window.location.replace('#/admin/dashboard')}
-                          variant="outline"
-                          size="sm"
-                          title="#/admin/dashboard"
-                        >
-                          Hash
-                        </Button>
-                      </div>
-                    </div>
+                    <NavButtonGroup
+                      label="location.href"
+                      onClick={(url) => {
+                        (window.location as any).href = url
+                      }}
+                    />
+                    <NavButtonGroup
+                      label="location.assign()"
+                      onClick={(url) => window.location.assign(url)}
+                    />
+                    <NavButtonGroup
+                      label="location.replace()"
+                      onClick={(url) => window.location.replace(url)}
+                    />
                   </div>
                 </div>
               </div>

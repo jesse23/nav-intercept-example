@@ -1,75 +1,77 @@
-# React + TypeScript + Vite
+# Navigation Interceptor Example
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A demonstration of a pure JavaScript navigation interceptor library that can block or allow navigation attempts based on configurable rules. This is useful for embedded web applications where you need to control navigation behavior.
 
-Currently, two official plugins are available:
+## Navigation Interceptor
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The `navigationInterceptor` is a singleton library that intercepts and controls navigation attempts in the browser.
 
-## React Compiler
+### How It Works
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+The interceptor works by:
 
-Note: This will impact Vite dev & build performances.
+1. **Intercepting at module load time**: The library immediately replaces native browser APIs (`window.open`, `history.pushState`, `history.replaceState`) and sets up event listeners when the module loads, before other libraries can cache the original methods.
 
-## Expanding the ESLint configuration
+2. **Event-based interception**: 
+   - Click events on `<a>` tags are intercepted in the capture phase
+   - Hash change events are monitored via `hashchange` listener
+   - Location API calls are intercepted via `beforeunload` event
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+3. **URL validation**: Each navigation attempt is checked against configured rules before being allowed or blocked.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### What It Can Block
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+✅ **Directly intercepted (with URL access)**:
+- Click events on anchor tags (`<a href="...">`)
+- `window.open()` calls
+- `history.pushState()` calls
+- `history.replaceState()` calls
+- Hash-based navigation (`#/path`)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+✅ **Intercepted via beforeunload (URL not accessible)**:
+- `location.href` assignments
+- `location.assign()` calls
+- `location.replace()` calls
+
+### What It Cannot Block
+
+❌ **Limitations**:
+- **Location API**: Can only show a generic browser confirmation dialog (cannot access destination URL or customize message)
+- **Programmatic navigation**: Some frameworks may cache navigation methods before the interceptor loads
+- **Form submissions**: Not intercepted (would require form-specific handling)
+- **Meta refresh tags**: Not intercepted
+
+### Configuration Options
+
+- `enabled`: Enable/disable the interceptor
+- `allowedDomains`: Whitelist of external domains to allow
+- `allowInternal`: Control whether internal links are blocked
+- `allowSubLocation`: Only allow hash routes matching a specific sublocation pattern (e.g., `#/admin/...`)
+- `blockLocationAPI`: Block all Location API navigation (shows browser confirmation)
+- `onBlocked`: Callback function when navigation is blocked
+
+### Usage
+
+```typescript
+import { navigationInterceptor } from '@/lib/navigationInterceptor'
+
+// Configure the interceptor
+navigationInterceptor.configure({
+  enabled: true,
+  allowedDomains: ['example.com'],
+  allowInternal: false,
+  allowSubLocation: 'admin',
+  onBlocked: (info) => {
+    console.log('Blocked:', info.href, 'from', info.source)
+  }
+})
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+This project uses React + TypeScript + Vite. Run the development server to see the interceptor in action with various navigation examples.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
